@@ -1,4 +1,8 @@
-# IS212 Software Project Management Backend 🗓️
+# All-In-One WFH System Backend 🖨️ 
+
+All-In-One, a printing solution company, wants to develop a web application to manage and track work-from-home (WFH) arrangements. The current Excel-based tracking system lacks governance, leading to confusion. The new system should allow staff to request regular or ad-hoc WFH days, include an approval process, and provide visibility for management to track staff availability in the office, addressing flexibility without productivity loss.
+
+## IS212 Software Project Management Backend 🗓️
 
 1. Clone the repository:
    

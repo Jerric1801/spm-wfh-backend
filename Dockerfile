@@ -19,4 +19,7 @@ COPY .env .env
 EXPOSE 3000
 
 # Run the app
-CMD ["npm", "start"]
+# CMD ["npm", "start"]
+
+# Migrate, Seed & Run
+CMD ["sh", "-c", "npm run db:migrate && npm run db:seed && npm start"]

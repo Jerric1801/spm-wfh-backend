@@ -11,6 +11,7 @@ module.exports = {
     // This helps differentiate between development and production behavior (e.g., logging, error handling)
     nodeEnv: process.env.NODE_ENV || 'development',
 
+    sprint: process.env.SPRINT || 0,
     pgUser: process.env.DB_USER,
     pgHost: process.env.DB_HOST,
     pgDatabase: process.env.DB_NAME,

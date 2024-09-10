@@ -1,3 +1,5 @@
+version: '3'
+
 services:
   express-app:
     container_name: express-app
@@ -7,7 +9,14 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy 
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: postgres-db
+      DB_PORT: 5432
 
   postgres-db:
     container_name: postgres-db
@@ -20,7 +29,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   postgres-admin:
     image: dpage/pgadmin4
@@ -29,11 +43,10 @@ services:
     ports:
       - "8888:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: user-name@domain-name.com
-      PGADMIN_DEFAULT_PASSWORD: strong-password
+      PGADMIN_DEFAULT_EMAIL: ${DB_ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${DB_ADMIN_PASSWORD}
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
 volumes:
-  postgres_data:
   pgadmin-data:
