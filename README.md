@@ -12,20 +12,15 @@ All-In-One, a printing solution company, wants to develop a web application to m
 
    `cd backend`
 
-3. Install Dependencies:
-   
-   `npm install`
-
-4. Ensure you have a .env containing necessary environment variables - refer to config folder, i.e.
+3. Ensure you have a .env containing necessary environment variables - refer to config folder, i.e.
 
     `PORT=5000`
 
-## Running the Server 🏃🏻‍➡️
+4. Build Docker Containers 🐳:
+   
+   `docker compose build`
 
-1. To run the server in production mode (without auto-restarting on file changes):
+5. Run with Docker 🏃:
+   
+   `docker compose up -d`
 
-    `npm start`
-
-2. For development, it is recommended to use nodemon which automatically restarts the server when file changes are detected:
-
-    `npm run dev`
