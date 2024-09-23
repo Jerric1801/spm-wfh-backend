@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",       // Ensures module import compartiability between ESM and CommonJS format
+        "target": "ESNext", // Set to ESNext or ES6
+        "moduleResolution": "nodenext", // Ensure you're using nodenext resolution
+        "rootDir": "./",         // Compiler to search
+        "baseUrl": "./",        
+        "outDir": "dist",
+        "esModuleInterop": true, // Helps with importing CommonJS modules
+        "sourceMap": true,
+        "noImplicitAny": true,
+    },
+    "include": ["./src/**/*"],
+    "exclude": ["node_modules"]
+}
