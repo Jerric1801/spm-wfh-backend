@@ -1,10 +1,10 @@
-import csv from 'csv-parser';
-import * as fs from 'fs';
-import * as path from 'path';
+const csv = require('csv-parser');
+const fs = require('fs');
+const path = require('path');
 import { Knex } from 'knex';
 
 interface EmployeeRow {
-  Staff_ID: string;
+  Staff_ID: number;
   Staff_FName: string;
   Staff_LName: string;
   Dept: string;

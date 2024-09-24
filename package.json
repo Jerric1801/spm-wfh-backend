@@ -5,9 +5,9 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
-    "db:migrate": "ts-node knex migrate:latest --knexfile ./config/knexfile.ts --project tsconfig.json",
-    "db:seed": "ts-node knex seed:run --knexfile ./config/knexfile.ts",
+    "start": "node ./src/server.js",
+    "db:migrate": "ts-node -r tsconfig-paths/register ./node_modules/.bin/knex migrate:latest --knexfile ./config/knexfile.ts",
+    "db:seed": "ts-node -r tsconfig-paths/register ./node_modules/.bin/knex seed:run --knexfile ./config/knexfile.ts",
     "dev": "nodemon src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,7 +23,8 @@
     "express": "^4.19.2",
     "knex": "^3.1.0",
     "morgan": "^1.10.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.0",
