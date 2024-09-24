@@ -1,0 +1,51 @@
+﻿Staff_ID,Dept,WFH_StartDate,WFH_EndDate,Type_WFH,Request_Status,Request_Date,Modification_Date,Superviser_ID,Decision_Date,Rejection_Reason,Modification_Reason
+140880,Sales,3/6/2024,5/8/2024,AM,Pending,9/11/2024,3/10/2024,160008,3/6/2024,Not justified,Schedule adjustment
+151596,Finance,19/9/2024,10/7/2024,WD,Approved,11/6/2024,1/10/2024,140879,13/6/2024,Not justified,
+180019,Engineering,11/11/2024,28/6/2024,AM,Pending,3/5/2024,11/3/2024,151408,17/10/2024,Not justified,Personal reasons
+140880,Engineering,8/8/2024,8/3/2024,AM,Approved,6/7/2024,2/4/2024,180001,15/2/2024,Project requires in-person,Schedule adjustment
+180005,HR,12/2/2024,26/4/2024,PM,Pending,10/3/2024,3/3/2024,151408,2/11/2024,,Personal reasons
+151058,Engineering,3/4/2024,25/11/2024,AM,Rejected,26/9/2024,25/10/2024,151408,28/11/2024,,Schedule adjustment
+140008,Consultancy,22/2/2024,28/1/2024,PM,Approved,1/9/2024,30/12/2024,160008,27/2/2024,Project requires in-person,Personal reasons
+190058,Engineering,16/7/2024,29/8/2024,AM,Rejected,12/3/2024,24/2/2024,151408,8/2/2024,,Personal reasons
+151476,Engineering,17/8/2024,8/7/2024,PM,Rejected,16/9/2024,14/1/2024,151408,8/12/2024,,
+190068,Sales,28/4/2024,19/3/2024,AM,Rejected,1/10/2024,14/11/2024,151408,7/3/2024,Project requires in-person,Personal reasons
+151531,Engineering,17/10/2024,8/2/2024,AM,Pending,10/10/2024,4/9/2024,151408,25/10/2024,,Personal reasons
+210024,Solutioning,30/5/2024,11/12/2024,WD,Pending,21/9/2024,27/10/2024,150008,14/10/2024,,Schedule adjustment
+151560,Consultancy,22/7/2024,17/4/2024,PM,Rejected,17/1/2024,4/5/2024,130002,7/6/2024,Project requires in-person,Schedule adjustment
+180025,Solutioning,6/7/2024,2/8/2024,AM,Pending,13/3/2024,18/7/2024,171029,16/12/2024,Not justified,
+190008,Sales,11/8/2024,21/5/2024,PM,Approved,7/9/2024,26/9/2024,160008,26/10/2024,Not justified,Schedule adjustment
+151465,Solutioning,7/9/2024,23/12/2024,PM,Rejected,24/2/2024,17/12/2024,151408,1/11/2024,Project requires in-person,Personal reasons
+151518,Engineering,11/3/2024,5/4/2024,AM,Rejected,25/8/2024,18/6/2024,140944,13/11/2024,,
+151470,Finance,6/9/2024,30/6/2024,PM,Pending,5/10/2024,22/8/2024,160008,14/5/2024,Project requires in-person,
+210030,Solutioning,11/10/2024,17/8/2024,AM,Pending,18/11/2024,12/10/2024,151408,24/7/2024,Project requires in-person,
+150422,Consultancy,11/8/2024,13/5/2024,PM,Approved,13/2/2024,27/2/2024,151408,10/5/2024,Not justified,Personal reasons
+160075,Solutioning,9/10/2024,1/5/2024,WD,Approved,6/12/2024,12/6/2024,151408,15/5/2024,,Personal reasons
+150276,IT,26/12/2024,19/6/2024,PM,Pending,29/6/2024,19/9/2024,150008,24/2/2024,Not justified,Schedule adjustment
+140910,Engineering,26/6/2024,3/3/2024,PM,Approved,20/8/2024,1/3/2024,160008,24/3/2024,Not justified,Schedule adjustment
+151505,Engineering,30/1/2024,27/1/2024,AM,Rejected,23/2/2024,28/12/2024,150008,25/4/2024,Project requires in-person,Schedule adjustment
+151540,Engineering,9/9/2024,1/4/2024,PM,Rejected,6/6/2024,26/11/2024,140103,27/5/2024,Project requires in-person,Schedule adjustment
+151517,Solutioning,4/10/2024,9/2/2024,PM,Pending,14/1/2024,2/5/2024,210001,8/7/2024,Not justified,
+190043,Sales,3/4/2024,24/10/2024,AM,Pending,26/6/2024,28/7/2024,151408,9/10/2024,Not justified,Schedule adjustment
+140882,Engineering,6/2/2024,7/10/2024,PM,Pending,22/8/2024,7/4/2024,151408,7/9/2024,Project requires in-person,
+180033,Engineering,27/7/2024,24/10/2024,AM,Rejected,4/3/2024,1/7/2024,151408,3/6/2024,Not justified,Personal reasons
+150976,Engineering,12/11/2024,6/10/2024,AM,Pending,23/4/2024,2/1/2024,151408,27/12/2024,Not justified,
+190043,Engineering,5/4/2024,19/7/2024,PM,Pending,25/1/2024,23/3/2024,180001,10/12/2024,Not justified,Personal reasons
+160334,IT,20/5/2024,25/10/2024,PM,Pending,20/2/2024,14/1/2024,150008,20/1/2024,Not justified,
+150193,Engineering,24/9/2024,14/10/2024,PM,Rejected,5/9/2024,18/4/2024,150008,16/2/2024,,Personal reasons
+190016,Engineering,28/6/2024,6/1/2024,WD,Approved,28/1/2024,18/10/2024,171029,15/3/2024,Project requires in-person,Schedule adjustment
+170215,Solutioning,17/8/2024,6/5/2024,WD,Approved,28/3/2024,22/7/2024,151408,6/11/2024,Not justified,Personal reasons
+151450,Solutioning,20/2/2024,4/11/2024,AM,Rejected,11/6/2024,15/3/2024,171043,29/6/2024,Not justified,Personal reasons
+190076,Solutioning,24/4/2024,17/5/2024,WD,Pending,27/11/2024,29/8/2024,160008,11/2/2024,Not justified,
+210041,Solutioning,11/1/2024,12/4/2024,WD,Pending,23/8/2024,9/3/2024,210001,23/6/2024,,Personal reasons
+190057,Engineering,21/12/2024,22/1/2024,AM,Approved,28/9/2024,26/8/2024,160008,27/11/2024,Project requires in-person,Schedule adjustment
+150245,Engineering,12/11/2024,16/5/2024,PM,Approved,25/3/2024,9/4/2024,210001,25/1/2024,Not justified,Personal reasons
+190068,Engineering,12/1/2024,27/5/2024,PM,Rejected,29/7/2024,23/6/2024,151408,26/9/2024,Project requires in-person,Personal reasons
+170655,Solutioning,9/10/2024,13/11/2024,WD,Approved,5/8/2024,18/7/2024,150008,18/8/2024,Not justified,
+150245,Finance,27/6/2024,1/9/2024,PM,Approved,13/1/2024,12/1/2024,151408,14/4/2024,,
+180021,Finance,29/2/2024,14/7/2024,WD,Approved,1/6/2024,2/10/2024,160008,21/8/2024,Project requires in-person,Schedule adjustment
+180013,Engineering,9/2/2024,1/4/2024,WD,Rejected,28/4/2024,21/2/2024,171029,26/9/2024,Not justified,
+151593,IT,9/7/2024,9/2/2024,WD,Approved,6/12/2024,29/2/2024,151408,14/10/2024,Not justified,
+190021,Finance,7/2/2024,4/6/2024,AM,Approved,2/3/2024,6/9/2024,180001,14/10/2024,,Personal reasons
+151502,Finance,14/10/2024,1/6/2024,WD,Pending,14/7/2024,29/5/2024,140008,30/11/2024,,Personal reasons
+160336,Finance,16/10/2024,25/10/2024,AM,Approved,24/8/2024,26/7/2024,150008,28/5/2024,Project requires in-person,Schedule adjustment
+190021,Finance,30/3/2024,3/8/2024,AM,Pending,16/11/2024,25/2/2024,160008,20/3/2024,,Personal reasons
