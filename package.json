@@ -6,8 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./src/server.js",
-    "db:migrate": "ts-node -r tsconfig-paths/register ./node_modules/.bin/knex migrate:latest --knexfile ./config/knexfile.ts",
-    "db:seed": "ts-node -r tsconfig-paths/register ./node_modules/.bin/knex seed:run --knexfile ./config/knexfile.ts",
+    "db:migrate": "ts-node -r tsconfig-paths/register ./node_modules/.bin/knex migrate:latest --knexfile $(node -p 'require(\"path\").resolve(\"./config/knexfile.ts\")')",
+    "db:seed": "ts-node -r tsconfig-paths/register ./node_modules/.bin/knex seed:run --knexfile $(node -p 'require(\"path\").resolve(\"./config/knexfile.ts\")')",
     "dev": "nodemon src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
