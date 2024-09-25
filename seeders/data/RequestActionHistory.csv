@@ -1,0 +1,51 @@
+Request_ID,Status,Reason,Reason,Updated_At,Updated_By
+1,Pending,Not justified,Schedule adjustment,3/10/2024,160008
+2,Approved,Not justified,nil,1/10/2024,140879
+3,Pending,Not justified,Personal reasons,11/3/2024,151408
+4,Approved,Project requires in-person,Schedule adjustment,2/4/2024,180001
+5,Pending,nil,Personal reasons,3/3/2024,151408
+6,Rejected,nil,Schedule adjustment,25/10/2024,151408
+7,Approved,Project requires in-person,Personal reasons,30/12/2024,160008
+8,Rejected,nil,Personal reasons,24/2/2024,151408
+9,Rejected,nil,nil,14/1/2024,151408
+10,Rejected,Project requires in-person,Personal reasons,14/11/2024,151408
+11,Pending,nil,Personal reasons,4/9/2024,151408
+12,Pending,nil,Schedule adjustment,27/10/2024,150008
+13,Rejected,Project requires in-person,Schedule adjustment,4/5/2024,130002
+14,Pending,Not justified,nil,18/7/2024,171029
+15,Approved,Not justified,Schedule adjustment,26/9/2024,160008
+16,Rejected,Project requires in-person,Personal reasons,17/12/2024,151408
+17,Rejected,nil,nil,18/6/2024,140944
+18,Pending,Project requires in-person,nil,22/8/2024,160008
+19,Pending,Project requires in-person,nil,12/10/2024,151408
+20,Approved,Not justified,Personal reasons,27/2/2024,151408
+21,Approved,nil,Personal reasons,12/6/2024,151408
+22,Pending,Not justified,Schedule adjustment,19/9/2024,150008
+23,Approved,Not justified,Schedule adjustment,1/3/2024,160008
+24,Rejected,Project requires in-person,Schedule adjustment,28/12/2024,150008
+25,Rejected,Project requires in-person,Schedule adjustment,26/11/2024,140103
+26,Pending,Not justified,nil,2/5/2024,210001
+27,Pending,Not justified,Schedule adjustment,28/7/2024,151408
+28,Pending,Project requires in-person,nil,7/4/2024,151408
+29,Rejected,Not justified,Personal reasons,1/7/2024,151408
+30,Pending,Not justified,nil,2/1/2024,151408
+31,Pending,Not justified,Personal reasons,23/3/2024,180001
+32,Pending,Not justified,nil,14/1/2024,150008
+33,Rejected,nil,Personal reasons,18/4/2024,150008
+34,Approved,Project requires in-person,Schedule adjustment,18/10/2024,171029
+35,Approved,Not justified,Personal reasons,22/7/2024,151408
+36,Rejected,Not justified,Personal reasons,15/3/2024,171043
+37,Pending,Not justified,nil,29/8/2024,160008
+38,Pending,nil,Personal reasons,9/3/2024,210001
+39,Approved,Project requires in-person,Schedule adjustment,26/8/2024,160008
+40,Approved,Not justified,Personal reasons,9/4/2024,210001
+41,Rejected,Project requires in-person,Personal reasons,23/6/2024,151408
+42,Approved,Not justified,nil,18/7/2024,150008
+43,Approved,nil,nil,12/1/2024,151408
+44,Approved,Project requires in-person,Schedule adjustment,2/10/2024,160008
+45,Rejected,Not justified,nil,21/2/2024,171029
+46,Approved,Not justified,nil,29/2/2024,151408
+47,Approved,nil,Personal reasons,6/9/2024,180001
+48,Pending,nil,Personal reasons,29/5/2024,140008
+49,Approved,Project requires in-person,Schedule adjustment,26/7/2024,150008
+50,Pending,nil,Personal reasons,25/2/2024,160008
