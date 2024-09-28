@@ -70,8 +70,6 @@ async function fetchRequestsByDateApproved(date: string) {
     }
   }
 //method to get employees who have approved WFH based on DEPT on the certain date
-
-
   async function fetchRequestsByDeptDate(dept:string ,date: string,status:string) {
     const client = createDBClient();
     
@@ -153,17 +151,75 @@ async function fetchRequestsByDateApproved(date: string) {
     } finally {
       await client.end();
     }
+
+}
+    
+
+
+
+    // count the number of employees WFO
+  async function countEmployeesWFOByDate(wfhStartDate: string) {
+    const client = createDBClient();
+    try {
+      await connectDB(client);
+      
+      const query = `
+        SELECT COUNT(e."Staff_ID") AS "in_office_count"
+        FROM public."Employees" e
+        LEFT JOIN public."Request" r
+        ON e."Staff_ID" = r."Staff_ID"
+        LEFT JOIN public."RequestDetails" w
+        ON r."Request_ID" = w."Request_ID"
+        AND r."Current_Status" = 'Approved'
+        AND w."WFH_StartDate" = $1
+        WHERE w."WFH_StartDate" IS NULL;
+      `;
+      
+      const res = await client.query(query, [wfhStartDate]);  // Pass date as parameter
+      console.log(`Employees in office on ${wfhStartDate}:`, res.rows[0].in_office_count);
+    } catch (err) {
+      console.error('Error querying the database', err);
+    } finally {
+      await client.end();
+    }
   }
   
-  // Example usage:
-//   fetchEmployeesWFOByDate('2024-10-01');
+  async function countEmployeesWFHByDate(wfhStartDate: string) {
+    const client = createDBClient();
+    
+    try {
+      await connectDB(client);
+      
+      const query = `
+        SELECT COUNT(e."Staff_ID") AS "wfh_count"
+        FROM public."Employees" e
+        LEFT JOIN public."Request" r
+        ON e."Staff_ID" = r."Staff_ID"
+        LEFT JOIN public."RequestDetails" w
+        ON r."Request_ID" = w."Request_ID"
+        WHERE r."Current_Status" = 'Approved'
+        AND w."WFH_StartDate" = $1;
+      `;
+      
+      const res = await client.query(query, [wfhStartDate]);  // Pass date as parameter
+      console.log(`Employees WFH on ${wfhStartDate}:`, res.rows[0].wfh_count);
+    } catch (err) {
+      console.error('Error querying the database', err);
+    } finally {
+      await client.end();
+    }
+}
   
 
-//test
+
+
+
+// //test
 //   fetchRequestsByDate('2024-11-06')
 //   fetchRequestsByDateApproved('2024-08-08');
 //   fetchRequestsByDeptDate('Engineering','2024-08-08', 'Approved')
 //   fetchRequestsByWFHDetails('AM', 'Approved', '2024-12-21');
-
-
+//   fetchEmployeesWFOByDate('2024-10-01');
+//   countEmployeesWFOByDate('2024-10-01');
+// countEmployeesWFHByDate("2024-10-01")
 //npx ts-node src/modules/request.ts
