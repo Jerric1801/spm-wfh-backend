@@ -1,52 +1,35 @@
-import express, { Request, Response } from 'express'; // import NextFunction where needed
-import { Pool } from 'pg';
+import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
-import config from '../config/default';
 
-// Uncomment and import your route files
-// import { errorHandler } from './src/middleware/errorHandler';
+// Import service routes
+import viewScheduleRoutes from './viewSchedule/routes/requestRoutes';
 
-// Initialize express
+
 const app = express();
+
+// Middleware setup
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-// Initialize Postgres
-const pool = new Pool({
-  user: config.pgUser,
-  host: config.pgHost,
-  database: config.pgDatabase,
-  password: config.pgPassword,
-  port: config.pgPort,
-});
-
-pool.connect((err: Error) => {
-  if (err) {
-    console.error('Error connecting to the database:', err.stack);
-  } else {
-    console.log('Connected to the PostgreSQL database.');
-  }
-});
-
-// Routes
-// app.use('/api/users', userRoutes);
-// app.use('/api/employees', employeeRoutes);
-
-// Error handling middleware
-// app.use(errorHandler);
+// Register routes for each service
+app.use('/services/view-schedule', viewScheduleRoutes);
+// Register more routes as more services are added
+// app.use('/api/manage-employee', manageEmployeeRoutes);
+// app.use('/api/attendance-tracking', attendanceTrackingRoutes);
 
 // Health check route
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running!' });
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'Server is running!' });
 });
 
-// Port setup
-const PORT = config.port;
+// // Error handling middleware
+// app.use((err, req, res, next) => {
+//     console.error(err.stack);
+//     res.status(500).json({ error: 'Internal Server Error' });
+// });
 
-app.listen(PORT, () => {
-  console.log(`Server running in ${config.nodeEnv} mode on port ${PORT}`);
-});
+export default app;

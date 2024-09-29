@@ -12,7 +12,10 @@ export const up = function(knex: Knex): Promise<void> {
         table.string('Reporting_Manager');      // Creates a string column for the reporting manager
         table.string('Role');                   // Creates a string column for the role
         table.timestamps(true, true);           // Creates created_at and updated_at timestamps
+
+        table.unique(['Staff_ID', 'Role']);
     });
+    
 };
 
 export const down = function(knex: Knex): Promise<void> {
