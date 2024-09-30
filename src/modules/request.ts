@@ -15,14 +15,14 @@ function createDBClient() {
 async function connectDB(client: Client) {
     try {
       await client.connect();
-      console.log('Connected to the database');
+      // console.log('Connected to the database');
     } catch (err) {
       console.error('Error connecting to the database', err);
     }
   }
 
   // mehtod to get all employee working status regardless of approval
-  async function fetchRequestsByDate(date: string) {
+  export async function fetchRequestsByDate(date: string) {
     const client = createDBClient();
     
     try {
@@ -37,6 +37,7 @@ async function connectDB(client: Client) {
       
       const res = await client.query(query, [date]);
       console.log(res.rows);
+      return res.rows;
     } catch (err) {
       console.error('Error querying the database', err);
     } finally {
@@ -44,7 +45,7 @@ async function connectDB(client: Client) {
     }
   }
   //method to get employees who have apporved WFH on the certain date
-async function fetchRequestsByDateApproved(date: string) {
+  export async function fetchRequestsByDateApproved(date: string) {
     const client = createDBClient();
     
     try {
@@ -62,7 +63,8 @@ async function fetchRequestsByDateApproved(date: string) {
       `;
       
       const res = await client.query(query, [date]);
-      console.log(res.rows);
+      // console.log(res.rows);
+      return res.rows;
     } catch (err) {
       console.error('Error querying the database', err);
     } finally {
@@ -70,7 +72,7 @@ async function fetchRequestsByDateApproved(date: string) {
     }
   }
 //method to get employees who have approved WFH based on DEPT on the certain date
-  async function fetchRequestsByDeptDate(dept:string ,date: string,status:string) {
+  export async function fetchRequestsByDeptDate(dept:string ,date: string,status:string) {
     const client = createDBClient();
     
     try {
@@ -89,7 +91,8 @@ async function fetchRequestsByDateApproved(date: string) {
         `;
       
       const res = await client.query(query, [dept,date,status]);
-      console.log(res.rows);
+      // console.log(res.rows);
+      return res.rows;
     } catch (err) {
       console.error('Error querying the database', err);
     } finally {
@@ -98,7 +101,7 @@ async function fetchRequestsByDateApproved(date: string) {
   }
 
 //fetch request by WFH type, status, date
-  async function fetchRequestsByWFHDetails(typeWFH: string, currentStatus: string, wfhStartDate: string) {
+  export  async function fetchRequestsByWFHDetails(typeWFH: string, currentStatus: string, wfhStartDate: string) {
     const client = createDBClient();
   
     try {
@@ -117,7 +120,8 @@ async function fetchRequestsByDateApproved(date: string) {
   
       // Execute the query with the parameters
       const res = await client.query(query, [typeWFH, currentStatus, wfhStartDate]);
-      console.log(res.rows); // Output the result
+      // console.log(res.rows); // Output the result
+      return res.rows;
     } catch (err) {
       console.error('Error querying the database', err);
     } finally {
@@ -126,7 +130,7 @@ async function fetchRequestsByDateApproved(date: string) {
   }
 
   // provides those who are working from home by filtering out those who do not have any wfh request or wfh request rejected or pending
-  async function fetchEmployeesWFOByDate(wfhStartDate: string) {
+  export async function fetchEmployeesWFOByDate(wfhStartDate: string) {
     const client = createDBClient();
   
     try {
@@ -145,7 +149,9 @@ async function fetchRequestsByDateApproved(date: string) {
       `;
       
       const res = await client.query(query, [wfhStartDate]);  // Pass date as parameter
-      console.log(res.rows);
+      // console.log(res.rows);
+      return res.rows;
+      
     } catch (err) {
       console.error('Error querying the database', err);
     } finally {
@@ -158,7 +164,7 @@ async function fetchRequestsByDateApproved(date: string) {
 
 
     // count the number of employees WFO
-  async function countEmployeesWFOByDate(wfhStartDate: string) {
+  export async function countEmployeesWFOByDate(wfhStartDate: string) {
     const client = createDBClient();
     try {
       await connectDB(client);
@@ -176,7 +182,8 @@ async function fetchRequestsByDateApproved(date: string) {
       `;
       
       const res = await client.query(query, [wfhStartDate]);  // Pass date as parameter
-      console.log(`Employees in office on ${wfhStartDate}:`, res.rows[0].in_office_count);
+      // console.log(`Employees in office on ${wfhStartDate}:`, res.rows[0].in_office_count);
+      return res.rows[0].in_office_count;
     } catch (err) {
       console.error('Error querying the database', err);
     } finally {
@@ -184,7 +191,7 @@ async function fetchRequestsByDateApproved(date: string) {
     }
   }
   
-  async function countEmployeesWFHByDate(wfhStartDate: string) {
+  export async function countEmployeesWFHByDate(wfhStartDate: string) {
     const client = createDBClient();
     
     try {
@@ -202,7 +209,8 @@ async function fetchRequestsByDateApproved(date: string) {
       `;
       
       const res = await client.query(query, [wfhStartDate]);  // Pass date as parameter
-      console.log(`Employees WFH on ${wfhStartDate}:`, res.rows[0].wfh_count);
+      // console.log(`Employees WFH on ${wfhStartDate}:`, res.rows[0].wfh_count);
+      return res.rows[0].wfh_count;
     } catch (err) {
       console.error('Error querying the database', err);
     } finally {
@@ -215,11 +223,11 @@ async function fetchRequestsByDateApproved(date: string) {
 
 
 // //test
-//   fetchRequestsByDate('2024-11-06')
-//   fetchRequestsByDateApproved('2024-08-08');
-//   fetchRequestsByDeptDate('Engineering','2024-08-08', 'Approved')
-//   fetchRequestsByWFHDetails('AM', 'Approved', '2024-12-21');
-//   fetchEmployeesWFOByDate('2024-10-01');
-//   countEmployeesWFOByDate('2024-10-01');
-// countEmployeesWFHByDate("2024-10-01")
+  fetchRequestsByDate('2024-11-06')
+  // fetchRequestsByDateApproved('2024-08-08');
+  // fetchRequestsByDeptDate('Engineering','2024-08-08', 'Approved')
+  // fetchRequestsByWFHDetails('AM', 'Approved', '2024-12-21');
+  // fetchEmployeesWFOByDate('2024-10-01');
+  // countEmployeesWFOByDate('2024-10-01');
+  // countEmployeesWFHByDate("2024-10-01");
 //npx ts-node src/modules/request.ts
