@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import config from '../config/default'
 
 // Import service routes
-// import viewScheduleRoutes from './viewSchedule/routes/requestRoutes';
+import viewScheduleRoutes from './services/viewSchedule/viewScheduleRoutes';
 import authRoutes from './services/auth/authRoutes'
 
 const app = express();
@@ -19,7 +19,7 @@ app.use(morgan('dev'));
 app.use('/api/auth', authRoutes);
 
 // Register routes for each service
-// app.use('/services/view-schedule', viewScheduleRoutes);
+app.use('/api/view-schedule', viewScheduleRoutes);
 
 
 // Health check route
