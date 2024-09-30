@@ -5,9 +5,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-interface UserPayload {
+export interface UserPayload {
   Staff_ID: number;
   Role: string;
+  Dept: string;
 }
 
 export const authenticateUser = async (Staff_ID: number, password: string) => {
@@ -31,6 +32,7 @@ export const authenticateUser = async (Staff_ID: number, password: string) => {
     const payload: UserPayload = {
       Staff_ID: user.Staff_ID,
       Role: user.Role,
+      Dept: user.Dept
     };
     const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
       expiresIn: process.env.JWT_EXPIRATION,
@@ -41,4 +43,5 @@ export const authenticateUser = async (Staff_ID: number, password: string) => {
     throw new Error(error.message || 'Authentication failed');
   }
 };
+
 
