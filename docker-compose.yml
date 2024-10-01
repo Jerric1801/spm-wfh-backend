@@ -1,8 +1,6 @@
-version: '3'
-
 services:
   express-app:
-    container_name: express-app
+    container_name: spm-wfh-backend
     build:
       context: .
       dockerfile: Dockerfile

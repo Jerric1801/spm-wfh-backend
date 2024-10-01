@@ -1,0 +1,8 @@
+Action_ID, Request_ID,Status,Staff_Reason,Supervisor_Reason,Updated_At,Updated_By
+
+
+1,Rejected,Not justified,Schedule adjustment,3/10/2024,140008
+2,Pending,nil,Personal reasons,3/3/2024,151408
+3,Pending,nil,Schedule adjustment,25/10/2024,151408
+4,Approved,nil,Personal reasons,24/2/2024,151408
+5,Pending,nil,Schedule adjustment,27/10/2024,150008
