@@ -5,7 +5,6 @@ import { viewSchedule } from './viewScheduleController';
 const router = express.Router();
 
 // Manager/HR view of work-from-home schedule
-router.get('/schedule', authenticateJWT, viewSchedule);
-router.get('/schedule', authenticateJWT, viewScheduleStats)
+router.post('/schedule', authenticateJWT, viewSchedule);
 
 export default router;

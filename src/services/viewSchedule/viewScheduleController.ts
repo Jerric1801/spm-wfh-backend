@@ -6,6 +6,14 @@ interface AuthenticatedRequest extends Request {
     user?: UserPayload;  // Use the defined `UserPayload` type
   }
 
+interface ViewScheduleRequestBody {
+    startDate: string;
+    endDate: string;
+    department?: string[]; // Optional, could be undefined
+    team?: string[]; // Optional, could be undefined
+}
+
+
 export const viewSchedule = async (req: AuthenticatedRequest, res: Response) => {
   /*
   */
@@ -19,11 +27,7 @@ export const viewSchedule = async (req: AuthenticatedRequest, res: Response) => 
       return res.status(403).json({ message: 'Access denied - not HR or senior manager.' });
     }
 
-    // Extract query parameters
-    const startDate = req.query.startDate as string;
-    const endDate = req.query.endDate as string;
-    const department = req.query.department as string[] | undefined;
-    const team = req.query.team as string[] | undefined;
+    const { startDate, endDate, department, team }: ViewScheduleRequestBody = req.body;
     
     // Now, departments and teams will always be arrays of strings.
     

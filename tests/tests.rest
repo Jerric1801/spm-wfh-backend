@@ -1,0 +1,30 @@
+### Login and get JWT token
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "Staff_ID": 150118,
+  "password": "P@ssword123"
+}
+
+
+### View Entire Company's WFH Schedule
+POST http://localhost:3000/api/view-schedule/schedule
+Authorization: Bearer <token here>
+Content-Type: application/json
+
+{
+    "startDate": "2024-03-01",
+    "endDate": "2024-03-31",
+    "department": ["Engineering"],
+    "team": ["Junior Engineers"]
+}
+
+
+
+
+// Expected: Status code 200, with a list of all approved work-from-home requests for the given date range.
+
+
+### Ping Server Health Endpoint
+GET http://localhost:3000/health
