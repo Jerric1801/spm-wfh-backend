@@ -13,7 +13,7 @@ interface RequestDetailsRow {
     const requestDetails: RequestDetailsRow[] = [];
   
     return new Promise((resolve, reject) => {
-      fs.createReadStream(path.join(__dirname, 'data', 'request_details.csv'))
+      fs.createReadStream(path.join(__dirname, 'data', 'additional_request_details.csv'))
         .pipe(csv())
         .on('data', (row: RequestDetailsRow) => {
           // Push each row into the requestDetails array

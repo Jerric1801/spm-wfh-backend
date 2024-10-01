@@ -15,7 +15,7 @@ export const seed = async (knex: Knex): Promise<void> => {
   const requests: RequestRow[] = [];
 
   return new Promise((resolve, reject) => {
-    fs.createReadStream(path.join(__dirname, 'data', 'request.csv'))
+    fs.createReadStream(path.join(__dirname, 'data', 'additional_request.csv'))
       .pipe(csv())
       .on('data', (row: RequestRow) => {
         // Push each row into the requests array

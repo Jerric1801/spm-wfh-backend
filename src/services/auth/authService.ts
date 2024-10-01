@@ -7,6 +7,8 @@ dotenv.config();
 
 export interface UserPayload {
   Staff_ID: number;
+  Staff_FName: string;
+  Staff_LName: string;
   Role: string;
   Dept: string;
 }
@@ -31,6 +33,8 @@ export const authenticateUser = async (Staff_ID: number, password: string) => {
     // Generate JWT token
     const payload: UserPayload = {
       Staff_ID: user.Staff_ID,
+      Staff_FName : user.Staff_FName,
+      Staff_LName : user.Staff_LName,
       Role: user.Role,
       Dept: user.Dept
     };
