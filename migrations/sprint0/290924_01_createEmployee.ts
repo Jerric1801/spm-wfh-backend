@@ -13,7 +13,7 @@ export const up = function(knex: Knex): Promise<void> {
         table.string('Role');                   // Creates a string column for the role
         table.timestamps(true, true);           // Creates created_at and updated_at timestamps
 
-        table.unique(['Staff_ID', 'Role']);
+        table.unique(['Staff_ID', 'Role', 'Dept']);
     });
     
 };

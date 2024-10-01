@@ -43,6 +43,7 @@ export const seed = async (knex: Knex): Promise<void> => {
           // Prepare data for insertion
           const credentials = employees.map((employee) => ({
             Staff_ID: employee.Staff_ID,
+            Dept: employee.Dept,
             Role: employee.Role,
             hashed_password: hashedPassword,
             last_updated: new Date(),
