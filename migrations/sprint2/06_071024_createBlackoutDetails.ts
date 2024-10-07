@@ -5,12 +5,12 @@ export const up = function(knex: Knex): Promise<void> {
     table.integer('Blackout_ID').notNullable();
     table.date('Date').notNullable(); 
     table.string('Timeblock').notNullable(); 
-    
+
     table.primary(['Blackout_ID', 'Date']);
 
     table.foreign('Blackout_ID')
       .references('Blackout_ID')
-      .inTable('Employees')
+      .inTable('BlackoutPeriod')
       .onDelete('CASCADE');
   });
 };
