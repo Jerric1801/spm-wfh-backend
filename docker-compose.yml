@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: 891377066434.dkr.ecr.ap-southeast-1.amazonaws.com/spm-wfh-backend:1.0.0
     ports:
       - "3000:3000"
     depends_on:
@@ -41,8 +42,8 @@ services:
     ports:
       - "8888:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${DB_ADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${DB_ADMIN_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
