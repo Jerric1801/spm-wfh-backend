@@ -20,6 +20,19 @@ Content-Type: application/json
     "team": ["Junior Engineers"]
 }
 
+### Send Application Request
+POST http://localhost:3000/api/apply-WFH/apply
+Authorization: Bearer <token here>
+Content-Type: application/json
+
+{
+    "dateRange": {
+        "startDate": "2024-03-01",
+        "endDate": "2024-03-31"
+    },
+    "wfhType": "Full Day",
+    "reason": "Personal reasons"
+}
 
 
 

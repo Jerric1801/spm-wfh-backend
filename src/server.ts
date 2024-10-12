@@ -7,6 +7,7 @@ import config from '../config/default'
 // Import service routes
 import viewScheduleRoutes from './services/viewSchedule/viewScheduleRoutes';
 import authRoutes from './services/auth/authRoutes'
+import applyWFHRoutes from './services/applyWFH/applyWFHRoutes';
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes);
 
 // Register routes for each service
 app.use('/api/view-schedule', viewScheduleRoutes);
+app.use('/api/apply-WFH', applyWFHRoutes);
 
 
 // Health check route
