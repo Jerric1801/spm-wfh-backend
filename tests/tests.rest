@@ -27,11 +27,11 @@ Content-Type: application/json
 
 {
     "dateRange": {
-        "startDate": "2024-03-01",
-        "endDate": "2024-03-31"
+        "startDate": "2024-10-14",
+        "endDate": "2024-10-14"
     },
-    "wfhType": "Full Day",
-    "reason": "Personal reasons"
+    "wfhType": "WE",
+    "reason": "EXAMPLE REASON"
 }
 
 

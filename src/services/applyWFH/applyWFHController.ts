@@ -9,7 +9,7 @@ interface AuthenticatedRequest extends Request {
 
 interface ApplyWFHRequestBody {
     dateRange: { startDate: string; endDate: string };
-    wfhType: 'AM' | 'PM' | 'Full Day';
+    wfhType: 'AM' | 'PM' | 'WD';
     reason: string;
 }
 
