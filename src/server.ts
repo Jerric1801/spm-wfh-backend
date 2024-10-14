@@ -6,6 +6,7 @@ import config from '../config/default'
 
 // Import service routes
 import viewScheduleRoutes from './services/viewSchedule/viewScheduleRoutes';
+import manageRequestRoutes from './services/manageRequest/manageRequestRoutes';
 import authRoutes from './services/auth/authRoutes'
 
 const app = express();
@@ -21,6 +22,8 @@ app.use('/api/auth', authRoutes);
 // Register routes for each service
 app.use('/api/view-schedule', viewScheduleRoutes);
 
+//Register routes for each serivces
+app.use('/api/manage-request', manageRequestRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
