@@ -39,15 +39,20 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
         `);
         
         // Generate a unique Request_ID
-        const requestIdResult = await pool.query('SELECT nextval(\'public."Request_Request_ID_seq"\'::regclass) AS "Request_ID"');
-        const requestId = requestIdResult.rows[0].Request_ID;
+        const requestIdQuery = await pool.query('SELECT nextval(\'public."Request_Request_ID_seq"\'::regclass) AS "Request_ID"');
+        const requestId = requestIdQuery.rows[0].Request_ID;
+        
+        console.log(requestIdQuery)
+        console.log(requestId)
 
         // Insert the request into the Request table
-        await pool.query(
+        const requestQuery = await pool.query(
             'INSERT INTO public."Request" ("Request_ID", "Staff_ID", "Current_Status", "Created_At", "Last_Updated") VALUES ($1, $2, $3, NOW(), NOW())',
             [requestId, request.Staff_ID, 'Pending']
         );
 
+        console.log(requestQuery)
+        
         // Insert the work-from-home details into the RequestDetails table for each date in the range
         const requestDetails = dates.map(date => ({
             Request_ID: requestId,
@@ -63,7 +68,10 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
 
         await pool.query(query);
 
-        return { message: 'Work-from-home request submitted successfully for the entire date range' };
+        // Return the created request with details
+        return {
+            details: requestDetails
+        };
     } catch (err) {
         console.error("Failed to apply for work-from-home:", err);
         throw err;
