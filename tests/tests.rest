@@ -10,7 +10,7 @@ Content-Type: application/json
 
 ### View Entire Company's WFH Schedule
 POST http://localhost:3000/api/view-schedule/schedule
-Authorization: Bearer <token here>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTUwMTE4LCJSb2xlIjoiMiIsIkRlcHQiOiJFbmdpbmVlcmluZyIsImlhdCI6MTcyODk1ODUwMiwiZXhwIjoxNzI4OTYyMTAyfQ.4qSlD1g_vrsLcU9owzJ8jZtBwZ_v4P7--zJYVysOKRw
 Content-Type: application/json
 
 {
@@ -20,6 +20,61 @@ Content-Type: application/json
     "team": ["Junior Engineers"]
 }
 
+### View All Pending Requests
+GET  http://localhost:3000/api/manage-request/pending
+
+
+
+### Approve Request
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":1,
+  "action":"approve"
+}
+###{
+###    "message": "Request approved successfully."
+###}
+
+### Reject Request
+POST  http://localhost:3000/api/manage-request
+{
+  "requestId":3,
+  "action":"reject"
+}
+###{
+###    "message": "Request rejected successfully."
+###}
+
+### if already Approved/Rejected
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":1,
+  "action":"approve"
+}
+###{
+###    "message": "Request not found or already processed."
+###}
+
+### Request if invalid RequestId
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":11313,
+  "action":"approve"
+}
+###{
+###    "message": "Request not found or already processed."
+###}
+
+
+### Request if invalid action
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":1,
+  "action":"decline"
+}
+###{
+###    "message": "Invalid action"
+###}
 
 
 
