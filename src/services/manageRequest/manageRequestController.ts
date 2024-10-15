@@ -5,15 +5,19 @@ export const manageRequest = async (req: Request, res: Response) => {
     const { requestId, action } = req.body;
 
     try {
+        let result;
+
         if (action === 'approve') {
-            const result = await approveRequest(requestId);
-            return res.status(200).json({ message: 'Request approved', data: result });
+            result = await approveRequest(requestId);
         } else if (action === 'reject') {
-            const result = await rejectRequest(requestId);
-            return res.status(200).json({ message: 'Request rejected', data: result });
+            result = await rejectRequest(requestId);
         } else {
             return res.status(400).json({ message: 'Invalid action' });
         }
+
+        // Return the result directly, no need to wrap it under another layer
+        return res.status(200).json(result);
+
     } catch (error) {
         console.error('Error managing request:', error);
         return res.status(500).json({ message: 'Internal server error' });

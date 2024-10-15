@@ -22,8 +22,28 @@ export const getPendingRequests = async () => {
     }
   };
 
+  export const getRequestByRequestId = async (requestId: number) => {
+    try {
+      // SQL query to fetch all requests with "Pending" status
+      const query = `
+        SELECT * FROM public."Request"
+        WHERE "Request_ID" = $1 
+      `;
+  
+      const result = await pool.query(query);
+      const pendingRequests = result.rows;
+  
+      // Return pending requests as an array
+      return pendingRequests;
+    } catch (error) {
+      console.error("Error fetching pending requests:", error);
+      throw error;
+    }
+  };
+
   export const approveRequest = async (requestId: number) => {
     try {
+      console.log("Approving request with ID:", requestId); // Log the request ID
       const query = `
         UPDATE public."Request"
         SET "Current_Status" = 'Approved', "Last_Updated" = NOW()
@@ -32,12 +52,14 @@ export const getPendingRequests = async () => {
   
       const params = [requestId];
       const result = await pool.query(query, params);
+      
+      console.log("Rows affected:", result.rowCount); // Log rowCount
   
       if (result.rowCount > 0) {
         console.log(`Request ${requestId} approved successfully.`);
         return { message: "Request approved successfully." };
       } else {
-        return { message: "Request not found or already processed." };
+        return { message: "Request not found or already processed."};
       }
     } catch (error) {
       console.error("Error approving request:", error);
@@ -45,7 +67,7 @@ export const getPendingRequests = async () => {
     }
   };
 
-  export const rejectRequest = async (requestId: number ) => {
+  export const rejectRequest = async (requestId: number) => {
     try {
       const query = `
         UPDATE public."Request"

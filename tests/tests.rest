@@ -10,7 +10,7 @@ Content-Type: application/json
 
 ### View Entire Company's WFH Schedule
 POST http://localhost:3000/api/view-schedule/schedule
-Authorization: Bearer <token here>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTUwMTE4LCJSb2xlIjoiMiIsIkRlcHQiOiJFbmdpbmVlcmluZyIsImlhdCI6MTcyODk1ODUwMiwiZXhwIjoxNzI4OTYyMTAyfQ.4qSlD1g_vrsLcU9owzJ8jZtBwZ_v4P7--zJYVysOKRw
 Content-Type: application/json
 
 {
@@ -22,162 +22,61 @@ Content-Type: application/json
 
 ### View All Pending Requests
 GET  http://localhost:3000/api/manage-request/pending
-# {
-#   "message": "Pending requests fetched",
-#   "data": [
-#     {
-#       "Request_ID": 1,
-#       "Staff_ID": 140880,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-10-03T00:00:00.000Z",
-#       "Last_Updated": "2024-11-09T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 3,
-#       "Staff_ID": 180019,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-03-11T00:00:00.000Z",
-#       "Last_Updated": "2024-05-03T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 5,
-#       "Staff_ID": 180005,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-03-03T00:00:00.000Z",
-#       "Last_Updated": "2024-03-10T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 11,
-#       "Staff_ID": 151531,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-09-04T00:00:00.000Z",
-#       "Last_Updated": "2024-10-10T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 12,
-#       "Staff_ID": 210024,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-09-21T00:00:00.000Z",
-#       "Last_Updated": "2024-10-27T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 14,
-#       "Staff_ID": 180025,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-03-13T00:00:00.000Z",
-#       "Last_Updated": "2024-07-18T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 18,
-#       "Staff_ID": 151470,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-08-22T00:00:00.000Z",
-#       "Last_Updated": "2024-10-05T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 19,
-#       "Staff_ID": 210030,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-10-12T00:00:00.000Z",
-#       "Last_Updated": "2024-11-18T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 22,
-#       "Staff_ID": 150276,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-06-29T00:00:00.000Z",
-#       "Last_Updated": "2024-09-19T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 26,
-#       "Staff_ID": 151517,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-01-14T00:00:00.000Z",
-#       "Last_Updated": "2024-05-02T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 27,
-#       "Staff_ID": 190043,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-06-26T00:00:00.000Z",
-#       "Last_Updated": "2024-07-28T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 28,
-#       "Staff_ID": 140882,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-04-07T00:00:00.000Z",
-#       "Last_Updated": "2024-08-22T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 30,
-#       "Staff_ID": 150976,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-01-02T00:00:00.000Z",
-#       "Last_Updated": "2024-04-23T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 31,
-#       "Staff_ID": 190043,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-01-25T00:00:00.000Z",
-#       "Last_Updated": "2024-03-23T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 32,
-#       "Staff_ID": 160334,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-01-14T00:00:00.000Z",
-#       "Last_Updated": "2024-02-20T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 37,
-#       "Staff_ID": 190076,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-08-29T00:00:00.000Z",
-#       "Last_Updated": "2024-11-27T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 38,
-#       "Staff_ID": 210041,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-03-09T00:00:00.000Z",
-#       "Last_Updated": "2024-08-23T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 48,
-#       "Staff_ID": 151502,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-05-29T00:00:00.000Z",
-#       "Last_Updated": "2024-07-14T00:00:00.000Z"
-#     },
-#     {
-#       "Request_ID": 50,
-#       "Staff_ID": 190021,
-#       "Current_Status": "Pending",
-#       "Created_At": "2024-02-25T00:00:00.000Z",
-#       "Last_Updated": "2024-11-16T00:00:00.000Z"
-#     }
-#   ]
-# }
+
+
 
 ### Approve Request
 POST http://localhost:3000/api/manage-request
-Authorization: Bearer <token here>
-Content-Type: application/json
 {
-  "Request_ID":1,
+  "requestId":1,
   "action":"approve"
 }
+###{
+###    "message": "Request approved successfully."
+###}
 
 ### Reject Request
 POST  http://localhost:3000/api/manage-request
-Authorization: Bearer <token here>
-Content-Type: application/json
 {
-  "Request_ID":3,
+  "requestId":3,
   "action":"reject"
 }
+###{
+###    "message": "Request rejected successfully."
+###}
+
+### if already Approved/Rejected
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":1,
+  "action":"approve"
+}
+###{
+###    "message": "Request not found or already processed."
+###}
+
+### Request if invalid RequestId
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":11313,
+  "action":"approve"
+}
+###{
+###    "message": "Request not found or already processed."
+###}
+
+
+### Request if invalid action
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":1,
+  "action":"decline"
+}
+###{
+###    "message": "Invalid action"
+###}
+
+
 
 // Expected: Status code 200, with a list of all approved work-from-home requests for the given date range.
 
