@@ -3,14 +3,14 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "Staff_ID": 150118,
+  "Staff_ID": 180001,
   "password": "P@ssword123"
 }
 
 
 ### View Entire Company's WFH Schedule
 POST http://localhost:3000/api/view-schedule/schedule
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTUwMTE4LCJSb2xlIjoiMiIsIkRlcHQiOiJFbmdpbmVlcmluZyIsImlhdCI6MTcyODk1ODUwMiwiZXhwIjoxNzI4OTYyMTAyfQ.4qSlD1g_vrsLcU9owzJ8jZtBwZ_v4P7--zJYVysOKRw
+Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -20,8 +20,37 @@ Content-Type: application/json
     "team": ["Junior Engineers"]
 }
 
-### View All Pending Requests
-GET  http://localhost:3000/api/manage-request/pending
+### View All Pending Requests by reporting_manager's staff_id retrieved during authentication
+GET http://localhost:3000/api/manage-request/pending
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTgwMDE5LCJSb2xlIjoiMiIsIkRlcHQiOiJDb25zdWx0YW5jeSIsImlhdCI6MTcyOTE0MTAwMCwiZXhwIjoxNzI5MTQ0NjAwfQ.klkdN5R-6fL36I9kcbYeKoIt3Bs5QwMh7kNstnQH7xg
+Content-Type: application/json
+### if reporting manager id is 180001
+# {
+#   "message": "Pending requests fetched",
+#   "data": [
+#     {
+#       "Request_ID": 3,
+#       "Staff_ID": 180019,
+#       "Current_Status": "Pending",
+#       "Created_At": "2024-03-11T00:00:00.000Z",
+#       "Last_Updated": "2024-05-03T00:00:00.000Z"
+#     },
+#     {
+#       "Request_ID": 5,
+#       "Staff_ID": 180005,
+#       "Current_Status": "Pending",
+#       "Created_At": "2024-03-03T00:00:00.000Z",
+#       "Last_Updated": "2024-03-10T00:00:00.000Z"
+#     },
+#     {
+#       "Request_ID": 14,
+#       "Staff_ID": 180025,
+#       "Current_Status": "Pending",
+#       "Created_At": "2024-03-13T00:00:00.000Z",
+#       "Last_Updated": "2024-07-18T00:00:00.000Z"
+#     }
+#   ]
+# }
 
 
 
