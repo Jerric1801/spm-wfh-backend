@@ -3,24 +3,27 @@ import { format, addDays, parseISO } from 'date-fns';
 
 
 // Function to fetch pending requests
-export const getPendingRequests = async () => {
-    try {
-      // SQL query to fetch all requests with "Pending" status
+export const getPendingRequests = async (managerStaffId: string) => {
+  try {
+      // SQL query to fetch requests where the reporting manager is the current user's staff ID
       const query = `
-        SELECT * FROM public."Request"
-        WHERE "Current_Status" = 'Pending' 
+          SELECT r.*
+          FROM public."Request" r
+          INNER JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
+          WHERE r."Current_Status" = 'Pending'
+          AND e."Reporting_Manager" = $1
       `;
-  
-      const result = await pool.query(query);
+
+      const result = await pool.query(query, [managerStaffId]);
       const pendingRequests = result.rows;
-  
+
       // Return pending requests as an array
       return pendingRequests;
-    } catch (error) {
+  } catch (error) {
       console.error("Error fetching pending requests:", error);
       throw error;
-    }
-  };
+  }
+};
 
   export const getRequestByRequestId = async (requestId: number) => {
     try {
