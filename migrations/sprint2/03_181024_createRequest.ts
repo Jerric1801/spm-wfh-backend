@@ -8,6 +8,8 @@ export const up = function (knex: Knex): Promise<void> {
         table.string('Current_Status'); // Current status of the request
         table.timestamp('Created_At').defaultTo(knex.fn.now()); // Creation timestamp
         table.timestamp('Last_Updated').defaultTo(knex.fn.now()); // Last updated timestamp
+        table.string('Request_Reason').notNullable();
+        table.string('Manager_Reason')
     });
 };
 
