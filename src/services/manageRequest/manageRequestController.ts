@@ -38,11 +38,6 @@ export const viewPendingRequests = async (req: AuthenticatedRequest, res: Respon
             return res.status(403).json({ message: 'Unauthorized' });
         }
 
-        // Check if the user is actually a reporting manager, check again cos anyone could 
-        // if (!user.Role || user.Role === '3') {
-        //     return res.status(403).json({ message: 'Access denied - not a reporting manager.' });
-        // }
-
         // Fetch pending requests where the reporting manager matches the current user's staff ID
         const pendingRequests = await getPendingRequests(user.Staff_ID.toString());
 
