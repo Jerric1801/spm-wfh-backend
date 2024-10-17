@@ -1,0 +1,51 @@
+Request_ID,Staff_ID,Current_Status,Created_At,Last_Updated,Request_Reason,Manager_Reason
+1,140880,Pending,2024-10-03,2024-11-09,Additional resources,
+2,151596,Approved,2024-06-11,2024-10-01,Team restructuring,
+3,180019,Pending,2024-03-11,2024-05-03,Policy change,
+4,140880,Approved,2024-04-02,2024-07-06,Policy change,
+5,180005,Pending,2024-03-03,2024-03-10,Urgent deadline,
+6,151058,Rejected,2024-09-26,2024-10-25,Team restructuring,Invalid Reason
+7,140008,Approved,2024-09-01,2024-12-30,Budget increase,
+8,190058,Rejected,2024-02-24,2024-03-12,Urgent deadline,Invalid Reason
+9,151476,Rejected,2024-01-14,2024-09-16,Additional resources,Invalid Reason
+10,190068,Rejected,2024-10-01,2024-11-14,Policy change,Invalid Reason
+11,151531,Pending,2024-09-04,2024-10-10,New compliance requirement,
+12,210024,Pending,2024-09-21,2024-10-27,Training requirement,
+13,151560,Rejected,2024-01-17,2024-05-04,Budget increase,Invalid Reason
+14,180025,Pending,2024-03-13,2024-07-18,Urgent deadline,
+15,190008,Approved,2024-09-07,2024-09-26,Team restructuring,
+16,151465,Rejected,2024-02-24,2024-12-17,Team restructuring,Invalid Reason
+17,151518,Rejected,2024-06-18,2024-08-25,New compliance requirement,Invalid Reason
+18,151470,Pending,2024-08-22,2024-10-05,Policy change,
+19,210030,Pending,2024-10-12,2024-11-18,Training requirement,
+20,150422,Approved,2024-02-13,2024-02-27,Budget increase,
+21,160075,Approved,2024-06-12,2024-12-06,Client request,
+22,150276,Pending,2024-06-29,2024-09-19,Urgent deadline,
+23,140910,Approved,2024-03-01,2024-08-20,Additional resources,
+24,151505,Rejected,2024-02-23,2024-12-28,Team restructuring,Invalid Reason
+25,151540,Rejected,2024-06-06,2024-11-26,Urgent deadline,Invalid Reason
+26,151517,Pending,2024-01-14,2024-05-02,Budget increase,
+27,190043,Pending,2024-06-26,2024-07-28,Extended timeline,
+28,140882,Pending,2024-04-07,2024-08-22,New compliance requirement,
+29,180033,Rejected,2024-03-04,2024-07-01,Training requirement,Invalid Reason
+30,150976,Pending,2024-01-02,2024-04-23,Training requirement,
+31,190043,Pending,2024-01-25,2024-03-23,Urgent deadline,
+32,160334,Pending,2024-01-14,2024-02-20,Budget increase,
+33,150193,Rejected,2024-04-18,2024-09-05,Client request,Invalid Reason
+34,190016,Approved,2024-01-28,2024-10-18,Training requirement,
+35,170215,Approved,2024-03-28,2024-07-22,Team restructuring,
+36,151450,Rejected,2024-03-15,2024-06-11,Urgent deadline,Invalid Reason
+37,190076,Pending,2024-08-29,2024-11-27,Additional resources,
+38,210041,Pending,2024-03-09,2024-08-23,Extended timeline,
+39,190057,Approved,2024-08-26,2024-09-28,Urgent deadline,
+40,150245,Approved,2024-03-25,2024-04-09,Client request,
+41,190068,Rejected,2024-06-23,2024-07-29,Team restructuring,Invalid Reason
+42,170655,Approved,2024-07-18,2024-08-05,Client request,
+43,150245,Approved,2024-01-12,2024-01-13,Additional resources,
+44,180021,Approved,2024-06-01,2024-10-02,Team restructuring,
+45,180013,Rejected,2024-02-21,2024-04-28,Policy change,Invalid Reason
+46,151593,Approved,2024-02-29,2024-12-06,Change in scope,
+47,190021,Approved,2024-03-02,2024-09-06,Urgent deadline,
+48,151502,Pending,2024-05-29,2024-07-14,Client request,
+49,160336,Approved,2024-07-26,2024-08-24,New compliance requirement,
+50,190021,Pending,2024-02-25,2024-11-16,Team restructuring,

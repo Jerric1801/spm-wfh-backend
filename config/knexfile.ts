@@ -34,7 +34,7 @@ const development: DatabaseConfig = {
         directory: path.join(__dirname, '..', 'migrations', `sprint${config.sprint}`),
     },
     seeds: {
-        directory: path.join(__dirname, '..', 'seeders'),
+        directory: path.join(__dirname, '..', 'seeders', `sprint${config.sprint}`),
     },
 };
 
@@ -52,7 +52,7 @@ const production: DatabaseConfig = {
         directory: path.join(__dirname, '..', 'migrations', `sprint${config.sprint}`),
     },
     seeds: {
-        directory: path.join(__dirname, '..', 'seeders'),
+        directory: path.join(__dirname, '..', 'seeders', `sprint${config.sprint}`),
     },
 };
 

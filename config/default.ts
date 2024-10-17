@@ -11,6 +11,7 @@ interface Config {
     pgDatabase?: string;
     pgPassword?: string;
     pgPort?: number;
+    mockPassword?: string;
 }
 
 const config: Config = {
@@ -20,12 +21,14 @@ const config: Config = {
     // The current environment in which the application is running
     nodeEnv: process.env.NODE_ENV || 'development',
 
-    sprint: Number(process.env.SPRINT) || 1,
+    sprint: Number(process.env.SPRINT) || 2,
     pgUser: process.env.DB_USER,
     pgHost: process.env.DB_HOST,
     pgDatabase: process.env.DB_NAME,
     pgPassword: process.env.DB_PASSWORD,
     pgPort: process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined,
+
+    mockPassword: process.env.MOCK_PASSWORD || 'password123'
 };
 
 export default config;
