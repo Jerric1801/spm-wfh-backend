@@ -51,15 +51,18 @@ export const approveRequest = async (requestId: number) => {
   }
 };
 
-export const rejectRequest = async (requestId: number) => {
+export const rejectRequest = async (requestId: number, managerReason: string) => {
+  if (!managerReason) {
+    throw new Error("Manager reason must be provided.");
+  }
   try {
     const query = `
       UPDATE public."Request"
-      SET "Current_Status" = 'Rejected', "Last_Updated" = NOW()
+      SET "Current_Status" = 'Rejected', "Last_Updated" = NOW(), "Manager_Reason" = $2
       WHERE "Request_ID" = $1 AND "Current_Status" = 'Pending'
     `;
 
-    const params = [requestId];
+    const params = [requestId, managerReason];
     const result = await pool.query(query, params);
 
     if (result.rowCount > 0) {

@@ -127,12 +127,12 @@ describe('manageRequestRoute', () => {
       expect(response.body).toEqual({ message: 'Request approved successfully.' });
     });
 
-    test('should reject a request if action is reject', async () => {
+    test('should reject a request if action is reject with a valid reason', async () => {
       mockQuery.mockResolvedValueOnce({ rowCount: 1 });
 
       const response = await request(app)
         .post('/requests')
-        .send({ requestId: 2, action: 'reject' })
+        .send({ requestId: 2, action: 'reject', managerReason: 'Valid rejection reason' })
         .set('Authorization', 'Bearer valid-token');
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ message: 'Request rejected successfully.' });

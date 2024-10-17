@@ -42,14 +42,24 @@ describe('manageRequestController', () => {
     });
 
     test('should reject a request when action is reject', async () => {
-      req.body = { requestId: 2, action: 'reject' };
+      req.body = { requestId: 2, action: 'reject', managerReason: 'invalid reason' };
       mockRejectRequest.mockResolvedValue({ message: 'Request rejected successfully.' });
 
       await manageRequest(req as AuthenticatedRequest, res as Response);
 
-      expect(mockRejectRequest).toHaveBeenCalledWith(2);
+      expect(mockRejectRequest).toHaveBeenCalledWith(2, 'invalid reason');
       expect(statusMock).toHaveBeenCalledWith(200);
       expect(jsonMock).toHaveBeenCalledWith({ message: 'Request rejected successfully.' });
+    });
+
+    test('should return 400 if manager did not provide reason', async () => {
+      req.body = { requestId: 2, action: 'reject'};
+      mockRejectRequest.mockRejectedValue({ message: 'Request rejected successfully.' });
+
+      await manageRequest(req as AuthenticatedRequest, res as Response);
+
+      expect(statusMock).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Manager must provide reason for rejection' });
     });
 
     test('should return 400 for an invalid action', async () => {
