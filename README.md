@@ -24,3 +24,5 @@ All-In-One, a printing solution company, wants to develop a web application to m
    
    `docker compose up -d`
 
+# Deployment
+
