@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getScheduleForUser } from './viewScheduleService';
+import { getSchedule } from './viewScheduleService';
 import { UserPayload } from '../auth/authService';
 
 /**
@@ -28,7 +28,7 @@ export const viewSchedule = async (req: AuthenticatedRequest, res: Response): Pr
     }
 
     // Let the service layer determine what schedule the user can access
-    const schedule = await getScheduleForUser(user, startDate as string, endDate as string, departments as string[], positions as string[]);
+    const schedule = await getSchedule(startDate as string, endDate as string, user, departments as string[], positions as string[]);
 
     res.status(200).json(schedule);
   } catch (error) {

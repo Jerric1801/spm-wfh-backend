@@ -6,9 +6,9 @@ import pool from '../config/db';
  * @param {number} staffId - The ID of the staff member.
  * @returns {Promise<{ reportingManager: string }>} - A promise that resolves to an object containing the reporting manager.
  */
-const getUserDetails = async (staffId: number): Promise<{ reportingManager: string }> => {
+const getUserDetails = async (staffId: number): Promise<{ reportingManager: string, position: string }> => {
   const query = `
-    SELECT "Reporting_Manager"
+    SELECT "Reporting_Manager", "Position"
     FROM public."Employees"
     WHERE "Staff_ID" = $1
   `;
@@ -19,8 +19,9 @@ const getUserDetails = async (staffId: number): Promise<{ reportingManager: stri
     throw new Error(`Staff member with ID ${staffId} not found`);
   }
 
-  const { Reporting_Manager: reportingManager } = result.rows[0];
-  return { reportingManager };
+  const { Reporting_Manager: reportingManager, Position : position } = result.rows[0];
+  console.log(reportingManager)
+  return { reportingManager, position };
 };
 
 // Exporting the function as default
