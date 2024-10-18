@@ -27,7 +27,7 @@ export const authenticateUser = async (Staff_ID: number, password: string) => {
     // Compare provided password with hashed_password in the database
     const isPasswordValid = await bcrypt.compare(password, user.hashed_password);
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new Error('Invalid password');
     }
 
     // Generate JWT token

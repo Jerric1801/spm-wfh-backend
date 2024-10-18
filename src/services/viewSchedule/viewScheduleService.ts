@@ -1,29 +1,150 @@
 import pool from "../../config/db";
 import { format, addDays, parseISO } from 'date-fns';
+import { UserPayload } from '../auth/authService';
+import getUserDetails from '../../shared/userDetails';
 
+/**
+ * Interface representing a staff member's details.
+ */
 interface StaffDetails {
+  staffId: string;
+  firstName: string;
+  lastName: string;
+  wfhType: string;
+}
+
+/**
+ * Interface representing an employee's record from the database.
+ */
+interface EmployeeRecord {
+  Staff_ID: string;
   Staff_FName: string;
   Staff_LName: string;
+  Dept: string;
+  Position: string;
+}
+
+/**
+ * Interface representing a work-from-home request record from the database.
+ */
+interface WFHRequestRecord {
+  Staff_ID: string;
+  Date: string;
   WFH_Type: string;
 }
 
-interface TeamDetails {
-  [staffId: string]: StaffDetails;
-}
+/**
+ * Fetches the work schedule for a user based on their role, date range, and optional filters.
+ *
+ * @param {UserPayload} user - The authenticated user object
+ * @param {string} startDate - The start date for the schedule (YYYY-MM-DD format)
+ * @param {string} endDate - The end date for the schedule (YYYY-MM-DD format)
+ * @param {string[]} [department] - Optional department filter
+ * @param {string[]} [role] - Optional role filter
+ * @returns {Promise<Object>} - A promise that resolves to the work schedule
+ */
+export const getScheduleForUser = async (
+  user: UserPayload,
+  startDate: string,
+  endDate: string,
+  department?: string[],
+  position?: string[],
+): Promise<object> => {
+  if (user.Role === '1') {
+    // HR user, use department and role for filtering.
+    console.log('User Role 1');
+    return await getSchedule(startDate, endDate, undefined, department, position);
+  } else {
+    // Normal staff, use user for filtering.
+    console.log('User Role 2 / 3');
+    return await getSchedule(startDate, endDate, user);
+  }
+};
 
-interface DepartmentDetails {
-  [team: string]: TeamDetails;
-}
+/**
+ * Fetches the schedule for employees within a specific date range, filtered by department and role.
+ *
+ * @param {string} startDate - The start date for the schedule (YYYY-MM-DD format).
+ * @param {string} endDate - The end date for the schedule (YYYY-MM-DD format).
+ * @param {UserPayload} [user] - An optional user object to filter employees by (e.g., for normal staff).
+ * @param {string[]} [department] - An optional department name or an array of department names to filter employees by.
+ * @param {string[]} [position] - An optional role name or an array of role names to filter employees by.
+ * @returns {Promise<{ [date: string]: { [department: string]: { [role: string]: { [staffId: string]: StaffDetails } } } }>} - A promise that resolves to the schedule object.
+ */
+export const getSchedule = async (
+  startDate: string,
+  endDate: string,
+  user?: UserPayload,
+  department?: string[],
+  position?: string[],
+): Promise<{ [date: string]: { [department: string]: { [role: string]: { [staffId: string]: StaffDetails } } } }> => {
+  console.log(department, position);
+  const departmentArray = Array.isArray(department) ? department : department ? [department] : [];
+  const positionArray = Array.isArray(position) ? position : position ? [position] : [];
+  console.log(departmentArray, positionArray);
 
-interface ScheduleDetails {
-  [department: string]: DepartmentDetails;
-}
+  let employees: EmployeeRecord[];
+  if (user) {
+    const { reportingManager } = await getUserDetails(user.Staff_ID);
+    employees = await getEmployees(reportingManager);
+  } else {
+    employees = await getEmployees(undefined, departmentArray, positionArray);
+  }
 
-interface FullSchedule {
-  [date: string]: ScheduleDetails;
-}
+  const staffIds = employees.map((e) => e.Staff_ID);
 
-// Helper function to generate all dates between two dates
+  const wfhRequests: WFHRequestRecord[] = await getWFHRequests(startDate, endDate, staffIds);
+
+  const schedule: { [date: string]: { [department: string]: { [role: string]: { [staffId: string]: StaffDetails } } } } = {};
+  const allDates = getAllDatesInRange(startDate, endDate);
+
+  employees.forEach((emp) => {
+    const { Staff_ID, Staff_FName, Staff_LName, Dept, Position } = emp;
+
+    const staff: StaffDetails = {
+      staffId: Staff_ID,
+      firstName: Staff_FName,
+      lastName: Staff_LName,
+      wfhType: 'IN',
+    };
+
+    allDates.forEach((date) => {
+      if (!schedule[date]) {
+        schedule[date] = {};
+      }
+
+      if (!schedule[date][Dept]) {
+        schedule[date][Dept] = {};
+      }
+
+      if (!schedule[date][Dept][Position]) {
+        schedule[date][Dept][Position] = {};
+      }
+
+      schedule[date][Dept][Position][Staff_ID] = staff;
+    });
+  });
+
+  wfhRequests.forEach((request) => {
+    const { Staff_ID, Date, WFH_Type } = request;
+    const formattedDate = format(parseISO(Date), 'yyyy-MM-dd');
+
+    employees.forEach((emp) => {
+      if (emp.Staff_ID === Staff_ID && schedule[formattedDate]?.[emp.Dept]?.[emp.Position]?.[Staff_ID]) {
+        schedule[formattedDate][emp.Dept][emp.Position][Staff_ID].wfhType = WFH_Type;
+      }
+    });
+  });
+
+  return schedule;
+};
+
+/**
+ * Helper function to get all dates in a specified range.
+ * @param {string} start - The start date.
+ * @param {string} end - The end date.
+ * @returns {string[]} - An array of all dates in the range.
+ */
 function getAllDatesInRange(start: string, end: string): string[] {
   const startDate = parseISO(start);
   const endDate = parseISO(end);
@@ -31,139 +152,98 @@ function getAllDatesInRange(start: string, end: string): string[] {
   let currentDate = startDate;
 
   while (currentDate <= endDate) {
-    dates.push(format(currentDate, 'yyyy-MM-dd')); // Format as string
-    currentDate = addDays(currentDate, 1); // Add one day
+    dates.push(format(currentDate, 'yyyy-MM-dd'));
+    currentDate = addDays(currentDate, 1);
   }
 
   return dates;
 }
 
-export const getSchedule = async (
+/**
+ * Helper function to build the WHERE clause for SQL queries based on department, reporting manager, and role.
+ *
+ * @param {string[]} [departmentArray=[]] - An optional array of department names.
+ * @param {string} [reportingManager] - An optional reporting manager name or ID.
+ * @param {string[]} [positionArray=[]] - An optional array of role names.
+ * @returns {{ conditions: string, whereParams: (string | number | string[])[] }} - The SQL conditions and query parameters.
+ */
+function buildWhereClause(reportingManager: string | undefined, departmentArray: string[] = [], positionArray: string[] = []): { conditions: string, whereParams: (string | number | string[])[] } {
+  const conditions: string[] = [];
+  const whereParams: (string | number | string[])[] = [];
+
+  console.log(departmentArray, positionArray)
+
+  // Add reporting manager condition if reportingManager is provided
+  if (reportingManager !== undefined) {
+    conditions.push(`e."Reporting_Manager" = $${whereParams.length + 1} OR e."Staff_ID" = $${whereParams.length + 2}`);
+    whereParams.push(reportingManager, Number(reportingManager));
+  }
+
+  // Add department condition if departmentArray is provided
+  if (departmentArray && departmentArray.length > 0) {
+    conditions.push(`e."Dept" = ANY($${whereParams.length + 1}::text[])`);
+    whereParams.push(departmentArray);
+  }
+
+  // Add role condition if positionArray is provided
+  if (positionArray && positionArray.length > 0) {
+    conditions.push(`e."Position" = ANY($${whereParams.length + 1}::text[])`);
+    whereParams.push(positionArray);
+  }
+
+  return { conditions: conditions.join(' AND '), whereParams };
+}
+
+/**
+ * Fetches employees based on department and reporting manager filters.
+ *
+ *
+ * @param {string[]} [departmentArray=[]] - An optional array of department names to filter by.
+ * @param {string[]} [reportingManager] - A reporting manager name or ID.
+ * @returns {Promise<EmployeeRecord[]>} - A promise that resolves to an array of employee records.
+ */
+async function getEmployees(reportingManager: string, departmentArray?: string[], positionArray?: string[]): Promise<EmployeeRecord[]> {
+  console.log(departmentArray, positionArray)
+  const { conditions, whereParams } = buildWhereClause(reportingManager, departmentArray, positionArray);
+  let query = `
+    SELECT e."Staff_ID", e."Staff_FName", e."Staff_LName", e."Dept", e."Position"
+    FROM public."Employees" e
+
+  `;
+
+  if (conditions) {
+    query += ` WHERE ${conditions}`;
+  }
+  console.log(query);
+  const result = await pool.query(query, whereParams);
+  return result.rows;
+}
+
+/**
+ * Fetches work-from-home (WFH) requests based on the date range, staff IDs, department, and reporting manager.
+ *
+ * @param {string} startDate - The start date for the WFH requests (in YYYY-MM-DD format).
+ * @param {string} endDate - The end date for the WFH requests (in YYYY-MM-DD format).
+ * @param {string[]} staffIds - An array of staff IDs.
+ * @returns {Promise<WFHRequestRecord[]>} - A promise that resolves to an array of WFH request records.
+ */
+async function getWFHRequests(
   startDate: string,
   endDate: string,
-  department?: string[] | string,
-  team?: string[] | string
-) => {
-  try {
-    // Ensure `department` and `team` are arrays, even if there's only a single entry
-    const departmentArray = Array.isArray(department) ? department : department ? [department] : [];
-    const teamArray = Array.isArray(team) ? team : team ? [team] : [];
+  staffIds: string[],
+): Promise<WFHRequestRecord[]> {
 
-    // Convert department and team arrays to strings for use in SQL query
-    const departmentString = departmentArray.length > 0 ? departmentArray.map(d => `'${d}'`).join(", ") : '';
-    const teamString = teamArray.length > 0 ? teamArray.map(t => `'${t}'`).join(", ") : '';
+  const params = [startDate, endDate, staffIds];
 
-    // Query 1: Get all employees based on department and team filters
-    let employeesQuery = `
-      SELECT e."Staff_ID", e."Staff_FName", e."Staff_LName", e."Dept", e."Position"
-      FROM public."Employees" e
-    `;
+  const query = `
+    SELECT e."Staff_ID", rd."Date", COALESCE(rd."WFH_Type", 'IN') AS "WFH_Type"
+    FROM public."Employees" e
+    INNER JOIN public."Request" r ON e."Staff_ID" = r."Staff_ID" AND r."Current_Status" = 'Approved'
+    INNER JOIN public."RequestDetails" rd ON r."Request_ID" = rd."Request_ID" AND rd."Date" BETWEEN $1 AND $2
+    WHERE e."Staff_ID" = ANY($3::int[])
+  `;
 
-    // Dynamically add clauses if department and team filters are provided for employees query
-    const employeeWhereConditions = [];
-    if (departmentString) {
-      employeeWhereConditions.push(`e."Dept" = ANY(ARRAY[${departmentString}])`);
-    }
-    if (teamString) {
-      employeeWhereConditions.push(`e."Position" = ANY(ARRAY[${teamString}])`);
-    }
-    if (employeeWhereConditions.length > 0) {
-      employeesQuery += ` WHERE ${employeeWhereConditions.join(' AND ')}`;
-    }
-
-    // Execute the query to get all employees
-    console.log(employeesQuery);
-    const employeesResult = await pool.query(employeesQuery);
-    const employees = employeesResult.rows;
-
-    // Query 2: Get all WFH requests within the date range for the employees retrieved
-    let wfhQuery = `
-      SELECT e."Staff_ID", rd."Date", COALESCE(rd."WFH_Type", 'IN') AS "WFH_Type"
-      FROM public."Employees" e
-      INNER JOIN public."Request" r ON e."Staff_ID" = r."Staff_ID" AND r."Current_Status" = 'Approved'
-      INNER JOIN public."RequestDetails" rd ON r."Request_ID" = rd."Request_ID" AND rd."Date" BETWEEN $1 AND $2
-    `;
-
-    const params: (string | string[])[] = [startDate, endDate];
-    if (employeeWhereConditions.length > 0) {
-      wfhQuery += ` WHERE ${employeeWhereConditions.join(' AND ')}`;
-    }
-
-    console.log(wfhQuery);
-    const wfhResult = await pool.query(wfhQuery, params);
-    const wfhRows = wfhResult.rows;
-    console.log(wfhRows)
-
-    // Generate a list of all dates between startDate and endDate
-    const allDates = getAllDatesInRange(startDate, endDate);
-
-    // Initialize a structure to hold the data for all dates
-    const schedule: FullSchedule = {};
-
-    // Create a map of employee details for quick lookup and to initialize each date's structure
-    employees.forEach(employee => {
-      const { Staff_ID, Staff_FName, Staff_LName, Dept, Position } = employee;
-
-      // Initialize schedule for all dates for each employee
-      allDates.forEach(date => {
-        if (!schedule[date]) {
-          schedule[date] = {};
-        }
-
-        if (!schedule[date][Dept]) {
-          schedule[date][Dept] = {};
-        }
-
-        if (!schedule[date][Dept][Position]) {
-          schedule[date][Dept][Position] = {};
-        }
-
-        // Set default WFH type as "IN" for all employees on all dates
-        schedule[date][Dept][Position][Staff_ID] = {
-          Staff_FName,
-          Staff_LName,
-          WFH_Type: 'IN'
-        };
-      });
-    });
-
-    // Iterate over the WFH requests and update the schedule accordingly
-    wfhRows.forEach(row => {
-      const { Staff_ID, Date, WFH_Type } = row;
-
-      // Format Date to YYYY-MM-DD for comparison
-      const formattedDate = format(Date, 'yyyy-MM-dd');
-
-      // Locate the employee's entry in the schedule and update WFH type if a WFH request exists
-      if (schedule[formattedDate]) {
-        Object.values(schedule[formattedDate]).forEach(department => {
-          Object.values(department).forEach(team => {
-            if (team[Staff_ID]) {
-              team[Staff_ID].WFH_Type = WFH_Type; // Update the WFH type
-            }
-          });
-        });
-      }
-    });
-
-    // Convert the schedule object to an array of objects, if needed
-    const finalResult = Object.entries(schedule).map(([date, departments]) => ({
-      date,
-      departments: Object.entries(departments).map(([dept, teams]) => ({
-        department: dept,
-        teams: Object.entries(teams).map(([team, members]) => ({
-          team,
-          members: Object.entries(members).map(([staffId, memberDetails]) => ({
-            staffId,
-            ...memberDetails
-          }))
-        }))
-      }))
-    }));
-
-    return finalResult;
-  } catch (error) {
-    console.error("Error fetching schedule:", error);
-    throw error;
-  }
-};
+  console.log(query);
+  const result = await pool.query(query, params);
+  return result.rows;
+}

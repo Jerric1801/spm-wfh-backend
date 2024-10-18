@@ -1,65 +1,38 @@
 import { Request, Response } from 'express';
-import { getSchedule } from './viewScheduleService';
+import { getScheduleForUser } from './viewScheduleService';
 import { UserPayload } from '../auth/authService';
 
+/**
+ * Interface representing an authenticated request, with a user payload.
+ */
 interface AuthenticatedRequest extends Request {
-    user?: UserPayload;  // Use the defined `UserPayload` type
-  }
-
-interface ViewScheduleRequestBody {
-    startDate: string;
-    endDate: string;
-    department?: string[]; // Optional, could be undefined
-    team?: string[]; // Optional, could be undefined
+  user?: UserPayload;  // Use the defined `UserPayload` type
 }
 
-
-export const viewSchedule = async (req: AuthenticatedRequest, res: Response) => {
-  /*
-  */
-
+/**
+ * Controller function for handling /viewSchedule GET endpoint for all roles.
+ * This function retrieves the schedule for the authenticated user based on their role.
+ *
+ * @param {AuthenticatedRequest} req - The request object, containing user information and query parameters.
+ * @param {Response} res - The response object to send the schedule data back to the client.
+ */
+export const viewSchedule = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const user = req.user;
+    const user: UserPayload = req.user;
+    const { startDate, endDate, departments, positions } = req.query;
 
-    // Restrict access for Role 3
-    if (user.Role === '3') {
-      // TODO: Unrestrict to view whole schedule
-      return res.status(403).json({ message: 'Access denied - not HR or senior manager.' });
-    }
-
-    const { startDate, endDate, department, team }: ViewScheduleRequestBody = req.body;
-    
-    // Now, departments and teams will always be arrays of strings.
-    
-
-    // Validate required parameters
+    // Validating required query parameters
     if (!startDate || !endDate) {
-      return res.status(400).json({ message: 'Please provide startDate and endDate.' });
+      res.status(400).json({ error: 'Start date and end date are required' });
+      return;
     }
-    console.log(startDate, endDate, department, team)
 
-    let schedule;
-
-    if (user.Role === '1') {
-      // Role 1 (HR): Can access all departments, optionally filter by department
-      schedule = await getSchedule(startDate, endDate, department);
-    } else if (user.Role === '2') {
-      // Role 2 (Manager): Default to their own department, force department view function to take in user's own department
-      const userDept = [user.Dept];
-      console.log(userDept)
-
-      if (team) {
-        // If specific team(s) provided, filter by team
-        schedule = await getSchedule(startDate, endDate, userDept, team);
-      } else {
-        // Otherwise, get the entire department's schedule
-        schedule = await getSchedule(startDate, endDate, userDept);
-      }
-    }
+    // Let the service layer determine what schedule the user can access
+    const schedule = await getScheduleForUser(user, startDate as string, endDate as string, departments as string[], positions as string[]);
 
     res.status(200).json(schedule);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
+  } catch (error) {
+    console.error('Error in viewScheduleController for /viewSchedule endpoint:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the schedule' });
   }
 };
