@@ -9,6 +9,8 @@ interface RequestRow {
   Current_Status: string;
   Created_At: string;   // 'YYYY-MM-DD' formatted string
   Last_Updated: string; // 'YYYY-MM-DD' formatted string
+  Request_Reason: string;
+  Manager_Reason: string;
 }
 
 export const seed = async (knex: Knex): Promise<void> => {
@@ -31,7 +33,9 @@ export const seed = async (knex: Knex): Promise<void> => {
           Staff_ID: row.Staff_ID,
           Current_Status: row.Current_Status,
           Created_At: row.Created_At,   // Using 'Created_At' from CSV
-          Last_Updated: row.Last_Updated // Using 'Last_Updated' from CSV
+          Last_Updated: row.Last_Updated, // Using 'Last_Updated' from CSV
+          Request_Reason: row.Request_Reason,
+          Manager_Reason: row.Manager_Reason
         });
       })
       .on('end', async () => {

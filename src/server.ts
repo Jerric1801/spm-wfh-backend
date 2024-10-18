@@ -8,6 +8,7 @@ import config from '../config/default'
 import viewScheduleRoutes from './services/viewSchedule/viewScheduleRoutes';
 import manageRequestRoutes from './services/manageRequest/manageRequestRoutes';
 import authRoutes from './services/auth/authRoutes'
+import applyWFHRoutes from './services/applyWFH/applyWFHRoutes';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 
 // Register routes for each service
 app.use('/api/view-schedule', viewScheduleRoutes);
+app.use('/api/apply-WFH', applyWFHRoutes);
 
 //Register routes for each serivces
 app.use('/api/manage-request', manageRequestRoutes);

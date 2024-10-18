@@ -7,7 +7,7 @@ interface AuthenticatedRequest extends Request {
 }
 
 export const manageRequest = async (req: Request, res: Response) => {
-    const { requestId, action } = req.body;
+    const { requestId, action, managerReason } = req.body;
 
     try {
         let result;
@@ -15,7 +15,10 @@ export const manageRequest = async (req: Request, res: Response) => {
         if (action === 'approve') {
             result = await approveRequest(requestId);
         } else if (action === 'reject') {
-            result = await rejectRequest(requestId);
+            if (!managerReason) {
+                return res.status(400).json({ message: 'Manager must provide reason for rejection' });
+            }
+            result = await rejectRequest(requestId, managerReason);
         } else {
             return res.status(400).json({ message: 'Invalid action' });
         }
