@@ -3,14 +3,14 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "Staff_ID": 150118,
+  "Staff_ID": 180001,
   "password": "P@ssword123"
 }
 
 
 ### View Entire Company's WFH Schedule
 POST http://localhost:3000/api/view-schedule/schedule
-Authorization: Bearer <token here>
+Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -20,6 +20,94 @@ Content-Type: application/json
     "team": ["Junior Engineers"]
 }
 
+### View All Pending Requests by reporting_manager's staff_id retrieved during authentication
+GET http://localhost:3000/api/manage-request/pending
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTgwMDAxLCJSb2xlIjoiMSIsIkRlcHQiOiJDb25zdWx0YW5jeSIsImlhdCI6MTcyOTE0MjMxNiwiZXhwIjoxNzI5MTQ1OTE2fQ.sm4p4KE8gRdy0RVOyLCEwAQyTWRhJFrRUA-ylXRPRuU
+Content-Type: application/json
+### if reporting manager id is 180001
+# {
+#   "message": "Pending requests fetched",
+#   "data": [
+#     {
+#       "Request_ID": 3,
+#       "Staff_ID": 180019,
+#       "Current_Status": "Pending",
+#       "Created_At": "2024-03-11T00:00:00.000Z",
+#       "Last_Updated": "2024-05-03T00:00:00.000Z"
+#     },
+#     {
+#       "Request_ID": 5,
+#       "Staff_ID": 180005,
+#       "Current_Status": "Pending",
+#       "Created_At": "2024-03-03T00:00:00.000Z",
+#       "Last_Updated": "2024-03-10T00:00:00.000Z"
+#     },
+#     {
+#       "Request_ID": 14,
+#       "Staff_ID": 180025,
+#       "Current_Status": "Pending",
+#       "Created_At": "2024-03-13T00:00:00.000Z",
+#       "Last_Updated": "2024-07-18T00:00:00.000Z"
+#     }
+#   ]
+# }
+
+### if non-reporting manager (no pending requests) 180005
+# {
+#   "message": "No pending requests found."
+# }
+
+
+### Approve Request
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":1,
+  "action":"approve"
+}
+###{
+###    "message": "Request approved successfully."
+###}
+
+### Reject Request
+POST  http://localhost:3000/api/manage-request
+{
+  "requestId":3,
+  "action":"reject"
+}
+###{
+###    "message": "Request rejected successfully."
+###}
+
+### if already Approved/Rejected
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":1,
+  "action":"approve"
+}
+###{
+###    "message": "Request not found or already processed."
+###}
+
+### Request if invalid RequestId
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":11313,
+  "action":"approve"
+}
+###{
+###    "message": "Request not found or already processed."
+###}
+
+
+### Request if invalid action
+POST http://localhost:3000/api/manage-request
+{
+  "requestId":1,
+  "action":"decline"
+}
+###{
+###    "message": "Invalid action"
+###}
 
 
 
