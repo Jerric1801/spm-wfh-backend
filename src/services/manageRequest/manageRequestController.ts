@@ -8,31 +8,28 @@ interface AuthenticatedRequest extends Request {
 
 export const manageRequest = async (req: Request, res: Response) => {
     const { requestId, action, managerReason } = req.body;
-
+  
     try {
-        let result;
-
-        if (action === 'approve') {
-            result = await approveRequest(requestId);
-        } else if (action === 'reject') {
-            if (!managerReason) {
-                return res.status(400).json({ message: 'Manager must provide reason for rejection' });
-            }
-            result = await rejectRequest(requestId, managerReason);
-        } else {
-            return res.status(400).json({ message: 'Invalid action' });
+      if (action === 'approve') {
+        await approveRequest(requestId);
+      } else if (action === 'reject') {
+        if (!managerReason) {
+          return res.status(400).json({ message: 'Manager must provide reason for rejection' });
         }
-
-        // Return the result directly, no need to wrap it under another layer
-        return res.status(200).json(result);
-
-    } catch (error) {
-        console.error('Error managing request:', error);
-        return res.status(500).json({ message: 'Internal server error' });
+        await rejectRequest(requestId, managerReason);
+      } else {
+        return res.status(400).json({ message: 'Invalid action' });
+      }
+  
+      return res.status(200).json({ message: 'Request processed successfully' }); // Consistent success message
+  
+    } catch (error: any) { // Type assertion for error object
+      console.error('Error managing request:', error);
+      return res.status(500).json({ message: 'Internal server error', details: error.message }); // More informative error
     }
-};
+  };
 
-// New function to view pending requests
+  
 export const viewPendingRequests = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
@@ -46,7 +43,7 @@ export const viewPendingRequests = async (req: AuthenticatedRequest, res: Respon
 
         // Check if there are no pending requests
         if (pendingRequests.length === 0) {
-            return res.status(404).json({ message: 'No pending requests found.' });
+            return res.status(200).json({ message: 'No pending requests found.' });
         }
 
         return res.status(200).json({ message: 'Pending requests fetched', data: pendingRequests });

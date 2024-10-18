@@ -5,20 +5,41 @@ import pool from "../../config/db";
 // Function to fetch pending requests
 export const getPendingRequests = async (managerStaffId: string) => {
   try {
-      // SQL query to fetch requests where the reporting manager is the current user's staff ID
-      const query = `
-          SELECT r.*
-          FROM public."Request" r
-          INNER JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
-          WHERE r."Current_Status" = 'Pending'
-          AND e."Reporting_Manager" = $1
-      `;
+    const query = `
+      SELECT 
+          r.*,
+          e."Staff_FName",
+          e."Staff_LName",
+          array_agg(rd."Date") as dates,
+          array_agg(rd."WFH_Type") as wfh_types
+      FROM public."Request" r
+      INNER JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
+      LEFT JOIN public."RequestDetails" rd ON r."Request_ID" = rd."Request_ID"
+      WHERE r."Current_Status" = 'Pending'
+      AND e."Reporting_Manager" = $1
+      GROUP BY r."Request_ID", e."Staff_FName", e."Staff_LName";  
+  `;
 
-      const result = await pool.query(query, [managerStaffId]);
-      const pendingRequests = result.rows;
+    const result = await pool.query(query, [managerStaffId]);
+    const pendingRequests = result.rows;
 
-      // Return pending requests as an array
-      return pendingRequests;
+    // Process the results to format the date range and WFH type
+    const formattedRequests = pendingRequests.map((request) => {
+      const sortedDates = request.dates.sort((a:Date, b:Date) => a.getTime() - b.getTime()); // Sort dates
+      const dateRange = `${sortedDates[0].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${sortedDates[sortedDates.length - 1].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+      const wfhType = request.wfh_types[0]; 
+
+      return {
+        key: request.Request_ID.toString(), 
+        id: request.Staff_ID,
+        member: `${request.Staff_FName} ${request.Staff_LName}`, 
+        dateRange: dateRange,
+        wfhType: wfhType,
+        reason: request.Request_Reason, 
+      };
+    });
+
+    return formattedRequests;
   } catch (error) {
       console.error("Error fetching pending requests:", error);
       throw error;

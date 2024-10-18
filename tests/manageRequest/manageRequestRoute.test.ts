@@ -98,11 +98,11 @@ describe('manageRequestRoute', () => {
       expect(response.body).toEqual({ message: 'Access denied - insufficient permissions.' });
     });
 
-    test('should return 404 if no pending requests are found', async () => {
+    test('should return 200 if no pending requests are found', async () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
       const response = await request(app).get('/requests/pending').set('Authorization', 'Bearer valid-token');
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(200);
       expect(response.body).toEqual({ message: 'No pending requests found.' });
     });
 
