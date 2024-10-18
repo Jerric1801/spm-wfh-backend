@@ -29,6 +29,10 @@ describe('manageRequestController', () => {
     };
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();  // Restore original implementations after each test
+});
+
   describe('manageRequest', () => {
     test('should approve a request when action is approve', async () => {
       req.body = { requestId: 1, action: 'approve' };

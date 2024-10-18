@@ -2,7 +2,7 @@
 import pool from '../../config/db';  // Ensure this points to your database configuration
 import { format, addDays, parseISO } from 'date-fns';
 
-interface WorkFromHomeRequest {
+export interface WorkFromHomeRequest {
     Staff_ID: number;
     dateRange: { startDate: string; endDate: string };
     wfhType: 'AM' | 'PM' | 'WD';
@@ -47,8 +47,8 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
 
         // Insert the request into the Request table
         const requestQuery = await pool.query(
-            'INSERT INTO public."Request" ("Request_ID", "Staff_ID", "Current_Status", "Created_At", "Last_Updated") VALUES ($1, $2, $3, NOW(), NOW())',
-            [requestId, request.Staff_ID, 'Pending']
+            'INSERT INTO public."Request" ("Request_ID", "Staff_ID", "Current_Status", "Created_At", "Last_Updated", "Request_Reason", "Manager_Reason") VALUES ($1, $2, $3, NOW(), NOW(), $4, $5)',
+            [requestId, request.Staff_ID, 'Pending', request.reason, '']
         );
 
         console.log(requestQuery)
