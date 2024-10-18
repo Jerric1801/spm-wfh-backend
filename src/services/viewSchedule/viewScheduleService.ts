@@ -75,8 +75,15 @@ export const getSchedule = async (
     employees = await getEmployees(undefined, departmentArray, positionArray);
   } else if (user.Role === "2") {
     // Role 2: Get employees under the same reporting manager AND same position, plus the reporting manager
-    console.log("User Role 2");
-    employees = await getEmployees(reportingManager, undefined, [position]);
+    const peers = await getEmployees(reportingManager, undefined, [position]);
+    const superior = await getEmployees(reportingManager);
+    const uniqueEmployees = new Map<string, EmployeeRecord>();
+
+    // Add peers and superior to a map to avoid duplicates
+    peers.forEach((emp) => uniqueEmployees.set(emp.Staff_ID, emp));
+    superior.forEach((emp) => uniqueEmployees.set(emp.Staff_ID, emp));
+
+    employees = Array.from(uniqueEmployees.values());
   } else if (user.Role === "3") {
     // Role 3: Get all employees whose Reporting_Manager matches the user's Staff_ID (in string)
     // and all employees with the same Reporting_Manager as them
@@ -119,7 +126,7 @@ export const getSchedule = async (
       staffId: Staff_ID,
       firstName: Staff_FName,
       lastName: Staff_LName,
-      wfhType: 'IN',
+      wfhType: "IN",
     };
 
     allDates.forEach((date) => {
@@ -145,9 +152,11 @@ export const getSchedule = async (
 
     employees.forEach((emp) => {
       if (
-        emp.Staff_ID === Staff_ID &&schedule[formattedDate]?.[emp.Dept]?.[emp.Position]?.[Staff_ID]
+        emp.Staff_ID === Staff_ID &&
+        schedule[formattedDate]?.[emp.Dept]?.[emp.Position]?.[Staff_ID]
       ) {
-        schedule[formattedDate][emp.Dept][emp.Position][Staff_ID].wfhType =WFH_Type;
+        schedule[formattedDate][emp.Dept][emp.Position][Staff_ID].wfhType =
+          WFH_Type;
       }
     });
   });
@@ -168,7 +177,7 @@ function getAllDatesInRange(start: string, end: string): string[] {
   let currentDate = startDate;
 
   while (currentDate <= endDate) {
-    dates.push(format(currentDate, 'yyyy-MM-dd'));
+    dates.push(format(currentDate, "yyyy-MM-dd"));
     currentDate = addDays(currentDate, 1);
   }
 
@@ -195,7 +204,11 @@ function buildWhereClause(
 
   // Add reporting manager condition if reportingManager is provided
   if (reportingManager !== undefined) {
-    conditions.push(`e."Reporting_Manager" = $${whereParams.length + 1} OR e."Staff_ID" = $${whereParams.length + 2}`);
+    conditions.push(
+      `e."Reporting_Manager" = $${whereParams.length + 1} OR e."Staff_ID" = $${
+        whereParams.length + 2
+      }`
+    );
     whereParams.push(reportingManager, Number(reportingManager));
   }
 
@@ -211,7 +224,7 @@ function buildWhereClause(
     whereParams.push(positionArray);
   }
 
-  return { conditions: conditions.join(' AND '), whereParams };
+  return { conditions: conditions.join(" AND "), whereParams };
 }
 
 /**
