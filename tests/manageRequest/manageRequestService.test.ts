@@ -72,9 +72,5 @@ describe('manageRequestService', () => {
 
       await expect(rejectRequest(2, 'Some valid reason')).rejects.toThrow('Database error');
     });
-
-    test('should throw an error if manager reason is not provided', async () => {
-      await expect(rejectRequest(2, '')).rejects.toThrow('Manager reason must be provided');
-    });
   });
 });

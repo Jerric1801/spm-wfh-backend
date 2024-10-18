@@ -52,9 +52,6 @@ export const approveRequest = async (requestId: number) => {
 };
 
 export const rejectRequest = async (requestId: number, managerReason: string) => {
-  if (!managerReason) {
-    throw new Error("Manager reason must be provided.");
-  }
   try {
     const query = `
       UPDATE public."Request"
