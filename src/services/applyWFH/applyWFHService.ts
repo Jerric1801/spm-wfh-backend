@@ -24,10 +24,37 @@ function getAllDatesInRange(start: string, end: string): string[] {
     return dates;
 }
 
+// Helper function to check for conflicting request dates
+async function checkForConflicts(dates: string[], staffId: number): Promise<boolean> {
+    const currentRequestIdsQuery = `
+        SELECT "Request_ID" FROM public."Request"
+        WHERE "Staff_ID" = $1
+    `;
+    const currentRequestIdsResult = await pool.query(currentRequestIdsQuery, [staffId]);
+    
+    if (!currentRequestIdsResult.rows) {
+        return false; // no results so no conflicts
+    }
+    
+    const requestIds = currentRequestIdsResult.rows.map(row => row.Request_ID);
+    const conflictsQuery =`
+        SELECT "Date" FROM public."RequestDetails"
+        WHERE "Request_ID" = ANY($1) AND "Date" = ANY($2)
+    `;
+    const conflictsResult = await pool.query(conflictsQuery, [requestIds, dates]);
+    return conflictsResult.rowCount > 0;
+}
+
 export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
     try {
         const dates = getAllDatesInRange(request.dateRange.startDate, request.dateRange.endDate);
 
+        // Check for conflicting request dates
+        const conflicts = await checkForConflicts(dates, request.Staff_ID);
+        if (conflicts) {
+            throw new Error("Conflicting request dates found.");
+        }
+        
         // Ensure sequence is correct
         await pool.query(`
             ALTER TABLE public."Request"
@@ -39,7 +66,9 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
         `);
         
         // Generate a unique Request_ID
-        const requestIdQuery = await pool.query('SELECT nextval(\'public."Request_Request_ID_seq"\'::regclass) AS "Request_ID"');
+        const requestIdQuery = await pool.query('SELECT nextval(\'public."Request_Request_ID_seq"\') AS "Request_ID"');
+
+        // Extract the Request_ID
         const requestId = requestIdQuery.rows[0].Request_ID;
         
         console.log(requestIdQuery)
