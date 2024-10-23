@@ -78,3 +78,26 @@ export const viewStaffRequests = async (req: AuthenticatedRequest, res: Response
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+export const viewRequests = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+
+        if (!user) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        // Fetch pending requests where the reporting manager matches the current user's staff ID
+        const pendingRequests = await getPendingRequests(user.Staff_ID.toString());
+
+        // Check if there are no pending requests
+        if (pendingRequests.length === 0) {
+            return res.status(404).json({ message: 'No pending requests found.' });
+        }
+
+        return res.status(200).json({ message: 'Pending requests fetched', data: pendingRequests });
+    } catch (error) {
+        console.error('Error fetching pending requests:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};

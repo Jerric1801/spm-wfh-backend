@@ -1,6 +1,6 @@
 import express from 'express';
 import authenticateJWT from '../../middleware/authJWT';
-import { manageRequest, viewPendingRequests, viewStaffRequests } from './manageRequestController';
+import { manageRequest, viewPendingRequests, viewStaffRequests,viewRequests } from './manageRequestController';
 import authoriseRole from '../../middleware/authRole';
 
 
@@ -15,5 +15,7 @@ router.get('/pending', authenticateJWT, authoriseRole(['1', '3']), viewPendingRe
 //GET route to view a staff's own requests regardless of status depending on the request date
 router.get('/getStaff', viewStaffRequests);
 
+// GET route to view requests, secured with JWT authentication
+router.get('/pending', authenticateJWT, authoriseRole(['1', '3']), viewRequests);
 
 export default router;

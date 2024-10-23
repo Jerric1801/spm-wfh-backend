@@ -25,6 +25,27 @@ export const getPendingRequests = async (managerStaffId: string) => {
   }
 };
 
+export const getRequests = async (managerStaffId: string) => {
+  try {
+      // SQL query to fetch requests where the reporting manager is the current user's staff ID
+      const query = `
+          SELECT r.*
+          FROM public."Request" r
+          INNER JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
+          WHERE e."Reporting_Manager" = $1
+      `;
+
+      const result = await pool.query(query, [managerStaffId]);
+      const pendingRequests = result.rows;
+
+      // Return pending requests as an array
+      return pendingRequests;
+  } catch (error) {
+      console.error("Error fetching pending requests:", error);
+      throw error;
+  }
+};
+
 export const approveRequest = async (requestId: number) => {
   try {
     console.log("Approving request with ID:", requestId); // Log the request ID
