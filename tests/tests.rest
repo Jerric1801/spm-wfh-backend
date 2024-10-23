@@ -112,7 +112,10 @@ POST http://localhost:3000/api/manage-request
 
 
 // Expected: Status code 200, with a list of all approved work-from-home requests for the given date range.
-
+GET http://localhost:3000/api/manage-request/getStaff
+{
+  
+}
 
 ### Ping Server Health Endpoint
 GET http://localhost:3000/health

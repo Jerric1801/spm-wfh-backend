@@ -76,3 +76,38 @@ export const rejectRequest = async (requestId: number, managerReason: string) =>
     throw error;
   }
 };
+
+export const getStaffRequests = async (staffID: string) => {
+  try {
+    // SQL query to fetch requests for a specific staff ID, including request details
+    const query = `
+        SELECT 
+            r."Request_ID",        
+            rd."Date",   
+            rd."WFH_Type",  
+            r."Current_Status", 
+            r."Request_Reason"   
+        FROM 
+            public."Request" r
+        INNER JOIN 
+            public."RequestDetails" rd
+        ON 
+            r."Request_ID" = rd."Request_ID"  
+        WHERE 
+            r."Staff_ID" = $1  -- Match the specific staff ID
+        ORDER BY 
+            r."Request_ID" ASC
+    `;
+
+    const result = await pool.query(query, [staffID]);
+    const staffRequests = result.rows;
+
+    // Return staff requests as an array
+    return staffRequests;
+} catch (error) {
+    console.error("Error fetching staff requests:", error);
+    throw error;
+}
+};
+
+
