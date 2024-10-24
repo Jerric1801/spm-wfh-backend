@@ -131,4 +131,21 @@ export const getStaffRequests = async (staffID: string) => {
 }
 };
 
+export const withdrawRequestService = async (requestId: number, staffId: string, withdrawalReason: string) => {
+  try {
+      const query = `
+          UPDATE public."Request"
+          SET "Current_Status" = 'Withdrawn', "Last_Updated" = NOW(), "Withdrawal_Reason" = $3
+          WHERE "Request_ID" = $1 AND "Staff_ID" = $2 AND "Current_Status" = 'Pending'
+      `;
+
+      const params = [requestId, staffId, withdrawalReason];
+      const result = await pool.query(query, params);
+
+      return result; // Return the result to check row count in controller
+  } catch (error) {
+      console.error('Error withdrawing request:', error);
+      throw error;
+  }
+};
 
