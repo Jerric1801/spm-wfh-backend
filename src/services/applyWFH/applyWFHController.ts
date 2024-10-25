@@ -54,3 +54,4 @@ export const requestWorkFromHome = async (req: AuthenticatedRequest, res: Respon
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
