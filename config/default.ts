@@ -12,6 +12,10 @@ interface Config {
     pgPassword?: string;
     pgPort?: number;
     mockPassword?: string;
+    awsAccessKey?: string;
+    awsSecretKey?: string;
+    awsRegion?: string;
+    awsBucketName?: string;
 }
 
 const config: Config = {
@@ -28,7 +32,12 @@ const config: Config = {
     pgPassword: process.env.DB_PASSWORD,
     pgPort: process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined,
 
-    mockPassword: process.env.MOCK_PASSWORD || 'password123'
+    mockPassword: process.env.MOCK_PASSWORD || 'password123',
+
+    awsAccessKey: process.env.AWS_ACCESS_KEY,
+    awsSecretKey: process.env.AWS_SECRET_KEY,
+    awsRegion: process.env.AWS_REGION,
+    awsBucketName: process.env.AWS_BUCKET,
 };
 
 export default config;
