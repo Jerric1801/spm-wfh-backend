@@ -4,7 +4,7 @@ Content-Type: application/json
 
 {
   "Staff_ID": 180001,
-  "password": "P@ssword123"
+  "password": "password123"
 }
 
 
