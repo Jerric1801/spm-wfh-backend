@@ -115,6 +115,25 @@ describe("applyForWorkFromHome", () => {
     });
   });
 
+  it("should reject work-from-home request if it conflicts existing requests", async () => {
+    const mockCurrentRequestIds = { rows: [{ Request_ID: 1 }] };
+    const mockConflictDates = { rowCount: 20 };
+
+    mockQuery
+      .mockResolvedValueOnce(mockCurrentRequestIds) // Mock selection of current existing Request_IDs
+      .mockResolvedValueOnce(mockConflictDates) // Mock selection of conflict dates
+
+    const request: WorkFromHomeRequest = {
+      Staff_ID: 123,
+      dateRange: { startDate: "2024-01-01", endDate: "2024-12-31" },
+      wfhType: "WD",
+      reason: "Year-long project",
+    };
+
+    await expect(applyForWorkFromHome(request)).rejects.toThrow("Conflicting request dates found.");
+    expect(pool.query).toHaveBeenCalledTimes(2);
+  });
+
   it("should handle database errors gracefully", async () => {
     // Mock the pool.query method to throw an error
     mockQuery.mockRejectedValueOnce(new Error("Database connection error"));
