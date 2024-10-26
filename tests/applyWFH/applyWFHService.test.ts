@@ -31,7 +31,7 @@ describe("applyForWorkFromHome", () => {
       .mockResolvedValueOnce({rowCount: 3}); // Mock insertion into RequestDetails table
 
     const request: WorkFromHomeRequest = {
-      Staff_ID: 123,
+      Staff_ID: 123456,
       dateRange: { startDate: "2024-10-01", endDate: "2024-10-03" },
       wfhType: "AM",
       reason: "Personal reasons",
@@ -64,7 +64,7 @@ describe("applyForWorkFromHome", () => {
       .mockResolvedValueOnce({ rowCount: 1 }); // Mock insertion into RequestDetails table
 
     const request: WorkFromHomeRequest = {
-      Staff_ID: 123,
+      Staff_ID: 123456,
       dateRange: { startDate: "2024-10-05", endDate: "2024-10-05" },
       wfhType: "PM",
       reason: "Medical appointment",
@@ -93,7 +93,7 @@ describe("applyForWorkFromHome", () => {
       .mockResolvedValueOnce({ rowCount: 365 }); // Mock successful insertion into RequestDetails table for 365 days
 
     const request: WorkFromHomeRequest = {
-      Staff_ID: 123,
+      Staff_ID: 123456,
       dateRange: { startDate: "2025-01-01", endDate: "2025-12-31" },
       wfhType: "WD",
       reason: "Year-long project",
@@ -124,7 +124,7 @@ describe("applyForWorkFromHome", () => {
       .mockResolvedValueOnce(mockConflictDates) // Mock selection of conflict dates
 
     const request: WorkFromHomeRequest = {
-      Staff_ID: 123,
+      Staff_ID: 123456,
       dateRange: { startDate: "2024-01-01", endDate: "2024-12-31" },
       wfhType: "WD",
       reason: "Year-long project",
@@ -139,7 +139,7 @@ describe("applyForWorkFromHome", () => {
     mockQuery.mockRejectedValueOnce(new Error("Database connection error"));
 
     const request: WorkFromHomeRequest = {
-      Staff_ID: 123,
+      Staff_ID: 123456,
       dateRange: { startDate: "2024-10-01", endDate: "2024-10-03" },
       wfhType: "AM",
       reason: "Personal reasons",
