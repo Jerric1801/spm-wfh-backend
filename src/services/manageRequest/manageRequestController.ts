@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { approveRequest, rejectRequest, getPendingRequests, getStaffRequests,withdrawRequestService } from './manageRequestService'; // Assuming getPendingRequests exists
+import { approveRequest, rejectRequest, getPendingRequests, getStaffRequests,withdrawRequestService,getPendingRequestCount } from './manageRequestService'; // Assuming getPendingRequests exists
 import { UserPayload } from '../auth/authService'; // Assuming UserPayload defines user data structure
 
 interface AuthenticatedRequest extends Request {
@@ -59,22 +59,22 @@ export const viewPendingRequests = async (req: AuthenticatedRequest, res: Respon
 export const viewStaffRequests = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
+        console.log("User:", user); // Check if the user is correctly set
 
         if (!user) {
             return res.status(403).json({ message: 'Unauthorized' });
         }
 
-        // Fetch staff requests where the Staff_ID matches the current user's staff ID
         const staffRequests = await getStaffRequests(user.Staff_ID.toString());
+        console.log("Staff Requests:", staffRequests); // Log the response from getStaffRequests
 
-        // Check if there are no requests for the staff member
         if (staffRequests.length === 0) {
             return res.status(404).json({ message: 'No requests found for the staff member.' });
         }
 
         return res.status(200).json({ message: 'Staff requests fetched successfully', data: staffRequests });
     } catch (error) {
-        console.error('Error fetching staff requests:', error);
+        console.error('Error fetching staff requests:', error); // Log the full error details
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -103,7 +103,7 @@ export const viewRequests = async (req: AuthenticatedRequest, res: Response) => 
 };
 
 export const withdrawRequest = async (req: AuthenticatedRequest, res: Response) => {
-    const { requestId, withdrawalReason } = req.body;
+    const { requestId, requestReason } = req.body;
 
     try {
         // Check if user is authenticated
@@ -112,13 +112,13 @@ export const withdrawRequest = async (req: AuthenticatedRequest, res: Response) 
             return res.status(403).json({ message: 'Unauthorized' });
         }
 
-        // Check if a withdrawal reason is provided
-        if (!withdrawalReason) {
-            return res.status(400).json({ message: 'Withdrawal reason must be provided' });
+        // Check if a request reason is provided
+        if (!requestReason) {
+            return res.status(400).json({ message: 'Request reason must be provided' });
         }
 
-        // Call the service to update the request status to "Withdrawn"
-        const result = await withdrawRequestService(requestId, user.Staff_ID.toString(), withdrawalReason);
+        // Call the service to update the request status to "Withdrawn" and set Request_Reason
+        const result = await withdrawRequestService(requestId, user.Staff_ID.toString(), requestReason);
 
         // Check if the request was successfully updated
         if (result.rowCount > 0) {
@@ -128,6 +128,21 @@ export const withdrawRequest = async (req: AuthenticatedRequest, res: Response) 
         }
     } catch (error) {
         console.error('Error withdrawing request:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const getPendingRequestCountController = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        const pendingCount = await getPendingRequestCount(user.Staff_ID.toString());
+        return res.status(200).json({ pendingCount });
+    } catch (error) {
+        console.error('Error fetching pending request count:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

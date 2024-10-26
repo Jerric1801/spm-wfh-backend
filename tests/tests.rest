@@ -3,7 +3,7 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "Staff_ID": 180001,
+  "Staff_ID": 180019,
   "password": "password123"
 }
 
@@ -22,7 +22,7 @@ Content-Type: application/json
 
 ### View All Pending Requests by reporting_manager's staff_id retrieved during authentication
 GET http://localhost:3000/api/manage-request/pending
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTgwMDAxLCJSb2xlIjoiMSIsIkRlcHQiOiJDb25zdWx0YW5jeSIsImlhdCI6MTcyOTE0MjMxNiwiZXhwIjoxNzI5MTQ1OTE2fQ.sm4p4KE8gRdy0RVOyLCEwAQyTWRhJFrRUA-ylXRPRuU
+Authorization: Bearer <token>
 Content-Type: application/json
 ### if reporting manager id is 180001
 # {
@@ -56,8 +56,19 @@ Content-Type: application/json
 # {
 #   "message": "No pending requests found."
 # }
+GET http://localhost:3000/api/manage-request/getStaff
+Authorization: Bearer <token>
+Content-Type: application/json
 
 
+
+GET http://localhost:3000/api/manage-request/pending/count
+Authorization: Bearer <token>
+Content-Type: application/json
+# if manager is 180001 and has 3 pending requests
+# {
+#     "pendingCount": 3
+# }
 ### Approve Request
 POST http://localhost:3000/api/manage-request
 {
@@ -109,13 +120,15 @@ POST http://localhost:3000/api/manage-request
 ###    "message": "Invalid action"
 ###}
 
-
+POST http://localhost:3000/api/manage-request/withdraw
+Authorization: Bearer <token>
+Content-Type: application/json
+{
+  "Request_ID":1,
+  "Request_Reason":"Change of Plans"
+}
 
 // Expected: Status code 200, with a list of all approved work-from-home requests for the given date range.
-GET http://localhost:3000/api/manage-request/getStaff
-{
-  
-}
 
 ### Ping Server Health Endpoint
 GET http://localhost:3000/health

@@ -104,7 +104,7 @@ export const getStaffRequests = async (staffID: string) => {
     const query = `
         SELECT 
             r."Request_ID",        
-            rd."Date",   
+            rd."Date" AS "Date",   
             rd."WFH_Type",  
             r."Current_Status", 
             r."Request_Reason"   
@@ -115,31 +115,53 @@ export const getStaffRequests = async (staffID: string) => {
         ON 
             r."Request_ID" = rd."Request_ID"  
         WHERE 
-            r."Staff_ID" = $1  -- Match the specific staff ID
+            r."Staff_ID" = $1 
         ORDER BY 
-            r."Request_ID" ASC
+            r."Request_ID", rd."Date" ASC
     `;
 
     const result = await pool.query(query, [staffID]);
-    const staffRequests = result.rows;
+    const rows = result.rows;
 
-    // Return staff requests as an array
-    return staffRequests;
-} catch (error) {
-    console.error("Error fetching staff requests:", error);
-    throw error;
-}
+    // Consolidate by Request_ID
+    const consolidatedRequests = rows.reduce((acc: any[], row) => {
+        const existingRequest = acc.find(r => r.Request_ID === row.Request_ID);
+
+        if (existingRequest) {
+            // Update the End_Date if the current row's Date is later
+            existingRequest.End_Date = row.Date;
+        } else {
+            // Add new entry for a unique Request_ID
+            acc.push({
+                Request_ID: row.Request_ID,
+                Start_Date: row.Date,
+                End_Date: row.Date,
+                WFH_Type: row.WFH_Type,
+                Current_Status: row.Current_Status,
+                Request_Reason: row.Request_Reason
+            });
+        }
+
+        return acc;
+    }, []);
+
+    // Return consolidated requests as an array
+    return consolidatedRequests;
+  } catch (error) {
+      console.error("Error fetching staff requests:", error);
+      throw error;
+  }
 };
 
-export const withdrawRequestService = async (requestId: number, staffId: string, withdrawalReason: string) => {
+export const withdrawRequestService = async (requestId: number, staffId: string, requestReason: string) => {
   try {
       const query = `
           UPDATE public."Request"
-          SET "Current_Status" = 'Withdrawn', "Last_Updated" = NOW(), "Withdrawal_Reason" = $3
+          SET "Current_Status" = 'Withdrawn', "Last_Updated" = NOW(), "Request_Reason" = $3
           WHERE "Request_ID" = $1 AND "Staff_ID" = $2 AND "Current_Status" = 'Pending'
       `;
 
-      const params = [requestId, staffId, withdrawalReason];
+      const params = [requestId, staffId, requestReason];
       const result = await pool.query(query, params);
 
       return result; // Return the result to check row count in controller
@@ -149,3 +171,22 @@ export const withdrawRequestService = async (requestId: number, staffId: string,
   }
 };
 
+export const getPendingRequestCount = async (managerStaffId: string) => {
+  try {
+      const query = `
+          SELECT COUNT(*) AS pending_count
+          FROM public."Request" r
+          INNER JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
+          WHERE r."Current_Status" = 'Pending'
+          AND e."Reporting_Manager" = $1
+      `;
+
+      const result = await pool.query(query, [managerStaffId]);
+      const pendingCount = result.rows[0].pending_count;
+
+      return parseInt(pendingCount, 10); // Convert to an integer
+  } catch (error) {
+      console.error("Error fetching pending request count:", error);
+      throw error;
+  }
+};
