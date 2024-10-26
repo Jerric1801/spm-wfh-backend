@@ -26,25 +26,30 @@ function getAllDatesInRange(start: string, end: string): string[] {
 
 // Helper function to check for conflicting request dates
 async function checkForConflicts(dates: string[], staffId: number): Promise<boolean> {
-    const currentRequestIdsQuery = `
-        SELECT "Request_ID" FROM public."Request"
-        WHERE "Staff_ID" = $1
-    `;
-    const currentRequestIdsResult = await pool.query(currentRequestIdsQuery, [staffId]);
+
+    const currentRequestIdsResult = await pool.query(`
+        SELECT "Request_ID" FROM public."Request" WHERE "Staff_ID" = $1
+    `, [staffId]);
     
+    console.log("CURRENT REQUEST IDs QUERY CALLED");
+
     if (!currentRequestIdsResult.rows) {
         return false; // no results so no conflicts
     }
     
     const requestIds = currentRequestIdsResult.rows.map(row => row.Request_ID);
-    const conflictsQuery =`
+
+    const conflictsResult = await pool.query(`
         SELECT "Date" FROM public."RequestDetails"
         WHERE "Request_ID" = ANY($1) AND "Date" = ANY($2)
-    `;
-    const conflictsResult = await pool.query(conflictsQuery, [requestIds, dates]);
+    `, [requestIds, dates]);
+    
+    console.log("CONFLICT REQUEST QUERY CALLED");
+
     return conflictsResult.rowCount > 0;
 }
 
+// Main Function
 export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
     try {
         const dates = getAllDatesInRange(request.dateRange.startDate, request.dateRange.endDate);
@@ -61,12 +66,18 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
             ALTER COLUMN "Request_ID" SET DEFAULT nextval('public."Request_Request_ID_seq"')
         `);
 
+        console.log("ALTER TABLE QUERY CALLED");
+
         await pool.query(`
             SELECT setval('public."Request_Request_ID_seq"', (SELECT MAX("Request_ID") FROM public."Request"))
         `);
+
+        console.log("SELECT setval QUERY CALLED");
         
         // Generate a unique Request_ID
         const requestIdQuery = await pool.query('SELECT nextval(\'public."Request_Request_ID_seq"\') AS "Request_ID"');
+
+        console.log("GENERATE REQUEST_ID QUERY CALLED");
 
         // Extract the Request_ID
         const requestId = requestIdQuery.rows[0].Request_ID;
@@ -80,7 +91,7 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
             [requestId, request.Staff_ID, 'Pending', request.reason, '']
         );
 
-        console.log(requestQuery)
+        console.log("INSERT REQUEST QUERY CALLED; Success Status: ", requestQuery.rowCount > 0);
         
         // Insert the work-from-home details into the RequestDetails table for each date in the range
         const requestDetails = dates.map(date => ({
@@ -91,12 +102,15 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
 
         // Bulk insert into RequestDetails
         // NOTE: WFH Request Reason is currently not included
-        const columns = '("Request_ID", "Date", "WFH_Type")';
-        const values = requestDetails.map(rd => `(${rd.Request_ID}, '${rd.Date}', '${rd.WFH_Type}')`).join(', ');
-        const query = `INSERT INTO public."RequestDetails" ${columns} VALUES ${values}`;
+        const details_columns = '("Request_ID", "Date", "WFH_Type")';
+        const details_values = requestDetails.map(rd => `(${rd.Request_ID}, '${rd.Date}', '${rd.WFH_Type}')`).join(', ');
 
-        await pool.query(query);
+        const requestDetailsQuery = await pool.query(
+            `INSERT INTO public."RequestDetails" ${details_columns} VALUES ${details_values}`
+        );
 
+        console.log("INSERT REQUEST DETAILS QUERY CALLED; Success Status: ", requestDetailsQuery.rowCount > 0);
+        console.log("ALL EXECUTION COMPLETE")
         // Return the created request with details
         return {
             details: requestDetails

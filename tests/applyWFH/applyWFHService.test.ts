@@ -10,7 +10,8 @@ const mockQuery = pool.query as jest.Mock;
 
 describe("applyForWorkFromHome", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    // jest.clearAllMocks();
+    jest.resetAllMocks();
   });
   
   afterEach(() => {
@@ -22,6 +23,7 @@ describe("applyForWorkFromHome", () => {
     const mockRequestId = { rows: [{ Request_ID: 1 }] };
 
     mockQuery
+      .mockResolvedValueOnce({}) // Mock selection of current existing Request_IDs
       .mockResolvedValueOnce({}) // Mock sequence setting query 1
       .mockResolvedValueOnce({}) // Mock sequence setting query 2
       .mockResolvedValueOnce(mockRequestId) // Mock the generation of Request_ID
@@ -37,7 +39,7 @@ describe("applyForWorkFromHome", () => {
 
     const result = await applyForWorkFromHome(request);
 
-    expect(mockQuery).toHaveBeenCalledTimes(5); // Ensure all queries are called
+    expect(mockQuery).toHaveBeenCalledTimes(6); // Ensure all queries are called
     expect(result.details).toHaveLength(3); // There should be 3 dates (Oct 1, 2, 3)
     expect(result.details).toEqual([
       { Request_ID: 1, Date: "2024-10-01", WFH_Type: "AM" },
@@ -50,8 +52,11 @@ describe("applyForWorkFromHome", () => {
 
   it("should generate correct dates for a single day request", async () => {
     const mockRequestId = { rows: [{ Request_ID: 2 }] };
+    const mockCurrentRequestIds = { rows: [{ Request_ID: 1 }] };
 
     mockQuery
+      .mockResolvedValueOnce(mockCurrentRequestIds) // Mock selection of current existing Request_IDs
+      .mockResolvedValueOnce({}) // Mock selection of conflict dates
       .mockResolvedValueOnce({}) // Mock sequence setting query 1
       .mockResolvedValueOnce({}) // Mock sequence setting query 2
       .mockResolvedValueOnce(mockRequestId) // Mock the generation of Request_ID
@@ -67,7 +72,7 @@ describe("applyForWorkFromHome", () => {
 
     const result = await applyForWorkFromHome(request);
 
-    expect(mockQuery).toHaveBeenCalledTimes(5);
+    expect(mockQuery).toHaveBeenCalledTimes(7);
     expect(result.details).toHaveLength(1); // Only one date in range
     expect(result.details).toEqual([
       { Request_ID: 2, Date: "2024-10-05", WFH_Type: "PM" },
@@ -76,8 +81,11 @@ describe("applyForWorkFromHome", () => {
 
   it("should handle a long date range for work-from-home request (Test 10)", async () => {
     const mockRequestId = { rows: [{ Request_ID: 3 }] }; // Mock returning a Request_ID
+    const mockCurrentRequestIds = { rows: [{ Request_ID: 1 }] };
 
     mockQuery
+      .mockResolvedValueOnce(mockCurrentRequestIds) // Mock selection of current existing Request_IDs
+      .mockResolvedValueOnce({}) // Mock selection of conflict dates
       .mockResolvedValueOnce({}) // Mock sequence setting query 1
       .mockResolvedValueOnce({}) // Mock sequence setting query 2
       .mockResolvedValueOnce(mockRequestId) // Mock the generation of Request_ID
@@ -86,23 +94,23 @@ describe("applyForWorkFromHome", () => {
 
     const request: WorkFromHomeRequest = {
       Staff_ID: 123,
-      dateRange: { startDate: "2024-01-01", endDate: "2024-12-31" },
+      dateRange: { startDate: "2025-01-01", endDate: "2025-12-31" },
       wfhType: "WD",
       reason: "Year-long project",
     };
 
     const result = await applyForWorkFromHome(request);
 
-    expect(pool.query).toHaveBeenCalledTimes(5);
-    expect(result.details).toHaveLength(366); // Each day in 2024
+    expect(pool.query).toHaveBeenCalledTimes(7);
+    expect(result.details).toHaveLength(365); // Each day in 2024
     expect(result.details[0]).toEqual({
       Request_ID: 3,
-      Date: "2024-01-01",
+      Date: "2025-01-01",
       WFH_Type: "WD",
     });
-    expect(result.details[365]).toEqual({
+    expect(result.details[364]).toEqual({
       Request_ID: 3,
-      Date: "2024-12-31",
+      Date: "2025-12-31",
       WFH_Type: "WD",
     });
   });
