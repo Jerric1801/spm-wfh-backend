@@ -78,14 +78,52 @@ describe('manageRequestRoute', () => {
   describe('GET /requests/pending', () => {
     test('should return pending requests for authenticated and authorized user', async () => {
       const mockRequests = [
-        { Request_ID: 1, Current_Status: 'Pending', Staff_ID: 150118 },
-        { Request_ID: 2, Current_Status: 'Pending', Staff_ID: 150119 },
+        {
+          Request_ID: 1,
+          Current_Status: 'Pending',
+          Staff_ID: 150118,
+          Staff_FName: 'John',
+          Staff_LName: 'Doe',
+          dates: [new Date('2024-10-25'), new Date('2024-10-26')],
+          wfh_types: ['Full Day'],
+          Request_Reason: 'Sick',
+        },
+        {
+          Request_ID: 2,
+          Current_Status: 'Pending',
+          Staff_ID: 150119,
+          Staff_FName: 'Nicolas',
+          Staff_LName: 'Tang',
+          dates: [new Date('2024-10-25'), new Date('2024-10-26')],
+          wfh_types: ['Full Day'],
+          Request_Reason: 'Sick',
+        },
       ];
+
       mockQuery.mockResolvedValueOnce({ rows: mockRequests });
 
       const response = await request(app).get('/requests/pending').set('Authorization', 'Bearer valid-token');
       expect(response.status).toBe(200);
-      expect(response.body).toEqual({ message: 'Pending requests fetched', data: mockRequests });
+
+      const expected = [
+        {
+          key: "1",
+          id: 150118,
+          member: "John Doe",
+          dateRange: "25 Oct - 26 Oct",
+          wfhType: "Full Day",
+          reason: "Sick",
+        },
+        {
+          key: "2",
+          id: 150119,
+          member: "Nicolas Tang",
+          dateRange: "25 Oct - 26 Oct",
+          wfhType: "Full Day",
+          reason: "Sick",
+        },
+      ]
+      expect(response.body).toEqual({ message: 'Pending requests fetched', data: expected });
     });
 
     test('should return 403 if user does not have the correct role', async () => {

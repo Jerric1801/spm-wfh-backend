@@ -25,9 +25,11 @@ export const getPendingRequests = async (managerStaffId: string) => {
 
     // Process the results to format the date range and WFH type
     const formattedRequests = pendingRequests.map((request) => {
-      const sortedDates = request.dates.sort((a:Date, b:Date) => a.getTime() - b.getTime()); // Sort dates
-      const dateRange = `${sortedDates[0].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${sortedDates[sortedDates.length - 1].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
-      const wfhType = request.wfh_types[0]; 
+      const sortedDates = (request.dates || []).sort((a:Date, b:Date) => a.getTime() - b.getTime()); // Sort dates or an empty array
+      const dateRange = sortedDates.length > 0 
+        ? `${sortedDates[0].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${sortedDates[sortedDates.length - 1].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+        : ''; // Set to empty string if no dates
+      const wfhType = request.wfh_types.length > 0 ? request.wfh_types[0] : undefined; 
 
       return {
         key: request.Request_ID.toString(), 

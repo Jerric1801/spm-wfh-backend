@@ -23,4 +23,14 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci 
-    - run: npm test
+    - name: Run tests
+      run: npm test
+
+      
+  check_status:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ success() }}  # Only runs if the 'build' job is successful
+    steps:
+      - name: All checks passed
+        run: echo "Tests passed!"
