@@ -19,7 +19,6 @@ export interface WorkFromHomeRequest {
 interface S3UploadParams {
     Bucket: string;
     Key: string;
-    // Expires: Date;
     ContentType: string;
 }
 

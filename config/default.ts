@@ -25,7 +25,7 @@ const config: Config = {
     // The current environment in which the application is running
     nodeEnv: process.env.NODE_ENV || 'development',
 
-    sprint: Number(process.env.SPRINT) || 2,
+    sprint: Number(process.env.SPRINT) || 3,
     pgUser: process.env.DB_USER,
     pgHost: process.env.DB_HOST,
     pgDatabase: process.env.DB_NAME,
