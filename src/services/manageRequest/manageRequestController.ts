@@ -69,7 +69,7 @@ export const viewStaffRequests = async (req: AuthenticatedRequest, res: Response
         console.log("Staff Requests:", staffRequests); // Log the response from getStaffRequests
 
         if (staffRequests.length === 0) {
-            return res.status(404).json({ message: 'No requests found for the staff member.' });
+            return res.status(200).json({ message: 'No requests found for the staff member.' });
         }
 
         return res.status(200).json({ message: 'Staff requests fetched successfully', data: staffRequests });
@@ -92,7 +92,7 @@ export const viewRequests = async (req: AuthenticatedRequest, res: Response) => 
 
         // Check if there are no pending requests
         if (pendingRequests.length === 0) {
-            return res.status(404).json({ message: 'No pending requests found.' });
+            return res.status(200).json({ message: 'No pending requests found.' });
         }
 
         return res.status(200).json({ message: 'Pending requests fetched', data: pendingRequests });
