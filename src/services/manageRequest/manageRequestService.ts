@@ -5,7 +5,7 @@ import pool from "../../config/db";
 // Function to fetch pending requests
 export const getPendingRequests = async (managerStaffId: string) => {
   try {
-      // SQL query to fetch requests where the reporting manager is the current user's staff ID
+      // SQL query to fetch requests where the reporting manager is the current user's staff ID status is pending
       const query = `
           SELECT r.*
           FROM public."Request" r
@@ -27,7 +27,7 @@ export const getPendingRequests = async (managerStaffId: string) => {
 
 export const getRequests = async (managerStaffId: string) => {
   try {
-      // SQL query to fetch requests where the reporting manager is the current user's staff ID
+      // SQL query to fetch requests where the reporting manager is the current user's staff ID regardless of status
       const query = `
           SELECT r.*
           FROM public."Request" r

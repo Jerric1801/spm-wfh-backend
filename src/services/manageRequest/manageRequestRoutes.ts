@@ -15,8 +15,8 @@ router.get('/pending', authenticateJWT, authoriseRole(['1', '3']), viewPendingRe
 //GET route to view a staff's own requests regardless of status depending on the request date
 router.get('/getStaff',authenticateJWT, viewStaffRequests);
 
-// GET route to view requests, secured with JWT authentication
-router.get('/pending', authenticateJWT, authoriseRole(['1', '3']), viewRequests);
+// GET route to view requests, secured with JWT authentication for manager to view staffs requests
+router.get('/allRequest', authenticateJWT, authoriseRole(['1', '3']), viewRequests);
 
 router.post('/withdraw', authenticateJWT, withdrawRequest);
 
