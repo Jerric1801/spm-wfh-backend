@@ -158,4 +158,46 @@ describe('manageRequestRoute', () => {
       expect(response.body).toEqual({ message: 'Internal server error' });
     });
   });
+
+  
+  describe('GET /requests/allRequest', () => {
+    test('should return pending requests for authenticated and authorized user', async () => {
+      const mockRequests = [
+        { Request_ID: 1, Current_Status: 'Pending', Staff_ID: 150118 },
+        { Request_ID: 43, Current_Status: 'Approved', Staff_ID: 150245 },
+      ];
+      mockQuery.mockResolvedValueOnce({ rows: mockRequests });
+
+      const response = await request(app).get('/requests/pending').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Pending requests fetched', data: mockRequests });
+    });
+
+    test('should return 403 if user does not have the correct role', async () => {
+      mockJwtVerify.mockImplementation((token, secret, callback) => {
+        callback(null, { Staff_ID: '150118', Role: '2' }); // Mock user with insufficient role
+      });
+
+      const response = await request(app).get('/requests/pending').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ message: 'Access denied - insufficient permissions.' });
+    });
+
+    test('should return 404 if no pending requests are found', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [] });
+
+      const response = await request(app).get('/requests/pending').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: 'No pending requests found.' });
+    });
+
+    test('should return 500 if an error occurs', async () => {
+      mockQuery.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app).get('/requests/pending').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    });
+  });
+
 });
