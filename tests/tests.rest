@@ -3,7 +3,7 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "Staff_ID": 180001,
+  "Staff_ID": 140880,
   "password": "password123"
 }
 
@@ -121,11 +121,11 @@ POST http://localhost:3000/api/manage-request
 ###}
 
 POST http://localhost:3000/api/manage-request/withdraw
-Authorization: Bearer <token>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTQwODgwLCJSb2xlIjoiMiIsIkRlcHQiOiJTYWxlcyIsImlhdCI6MTczMDI3ODk1MCwiZXhwIjoxNzMwMjgyNTUwfQ.V8yXDdEG3k_rOFI9nUIV-BnuaL1xCPkQCgN1eEDCUhs
 Content-Type: application/json
 {
   "Request_ID":1,
-  "Request_Reason":"Change of Plans"
+  "RequestReason":"Change of Plans"
 }
 
 // Expected: Status code 200, with a list of all approved work-from-home requests for the given date range.

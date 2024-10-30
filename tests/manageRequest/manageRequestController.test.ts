@@ -1,5 +1,5 @@
-import { manageRequest, viewPendingRequests } from '../../src/services/manageRequest/manageRequestController';
-import { approveRequest, rejectRequest, getPendingRequests } from "../../src/services/manageRequest/manageRequestService";
+import { manageRequest, viewPendingRequests, viewRequests,viewStaffRequests} from '../../src/services/manageRequest/manageRequestController';
+import { approveRequest, rejectRequest, getPendingRequests,getRequests ,getStaffRequests} from "../../src/services/manageRequest/manageRequestService";
 import { Request, Response } from 'express';
 import { UserPayload } from '../../src/services/auth/authService';
 
@@ -12,6 +12,8 @@ jest.mock('../../src/services/manageRequest/manageRequestService');
 const mockApproveRequest = approveRequest as jest.Mock;
 const mockRejectRequest = rejectRequest as jest.Mock;
 const mockGetPendingRequests = getPendingRequests as jest.Mock;
+const mockGetRequests = getRequests as  jest.Mock;
+const mockGetStaff = getStaffRequests as jest.Mock;
 
 describe('manageRequestController', () => {
   let req: Partial<AuthenticatedRequest>;
@@ -127,4 +129,54 @@ describe('manageRequestController', () => {
       expect(jsonMock).toHaveBeenCalledWith({ message: 'Internal server error' });
     });
   });
+
+  describe('viewAllRequests', () => {
+    test('should return 403 if user is not authenticated', async () => {
+      req.user = undefined;
+
+      await viewRequests(req as AuthenticatedRequest, res as Response);
+
+      expect(statusMock).toHaveBeenCalledWith(403);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Unauthorized' });
+    });
+
+    test('should return 404 if no requests are found', async () => {
+      req.user = { Staff_ID: 150118 } as UserPayload;
+      mockGetRequests.mockResolvedValue([]);
+
+      await viewRequests(req as AuthenticatedRequest, res as Response);
+
+      expect(mockGetRequests).toHaveBeenCalledWith('150118');
+      expect(statusMock).toHaveBeenCalledWith(404);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'No requests found.' });
+    });
+
+    test('should return 200 and the requests if found', async () => {
+      req.user = { Staff_ID: 150118 } as UserPayload;
+      const allRequests = [
+        { Request_ID: 1, Current_Status: 'Pending', Staff_ID: 150118 },
+      ];
+      mockGetRequests.mockResolvedValue(allRequests);
+
+      await viewRequests(req as AuthenticatedRequest, res as Response);
+
+      expect(mockGetRequests).toHaveBeenCalledWith('150118');
+      expect(statusMock).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Requests fetched', data: allRequests });
+    });
+
+    test('should return 500 if an error occurs', async () => {
+      req.user = { Staff_ID: 150118 } as UserPayload;
+      mockGetRequests.mockRejectedValue(new Error('Database error'));
+
+      await viewRequests(req as AuthenticatedRequest, res as Response);
+
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Internal server error' });
+    });
+  });
+
+
+
+
 });

@@ -36,12 +36,12 @@ export const getRequests = async (managerStaffId: string) => {
       `;
 
       const result = await pool.query(query, [managerStaffId]);
-      const pendingRequests = result.rows;
+      const requests = result.rows;
 
       // Return pending requests as an array
-      return pendingRequests;
+      return requests;
   } catch (error) {
-      console.error("Error fetching pending requests:", error);
+      console.error("Error fetching requests:", error);
       throw error;
   }
 };
@@ -131,7 +131,7 @@ export const getStaffRequests = async (staffID: string) => {
             // Update the End_Date if the current row's Date is later
             existingRequest.End_Date = row.Date;
         } else {
-            // Add new entry for a unique Request_ID
+            // Add new entry for a unique Request_ID with Start_Date and End_Date initialized to the same date
             acc.push({
                 Request_ID: row.Request_ID,
                 Start_Date: row.Date,
@@ -153,12 +153,13 @@ export const getStaffRequests = async (staffID: string) => {
   }
 };
 
+
 export const withdrawRequestService = async (requestId: number, staffId: string, requestReason: string) => {
   try {
       const query = `
           UPDATE public."Request"
           SET "Current_Status" = 'Withdrawn', "Last_Updated" = NOW(), "Request_Reason" = $3
-          WHERE "Request_ID" = $1 AND "Staff_ID" = $2 AND "Current_Status" = 'Pending'
+          WHERE "Request_ID" = $1 AND "Staff_ID" = $2
       `;
 
       const params = [requestId, staffId, requestReason];

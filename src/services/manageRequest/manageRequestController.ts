@@ -92,12 +92,12 @@ export const viewRequests = async (req: AuthenticatedRequest, res: Response) => 
 
         // Check if there are no pending requests
         if (allRequests.length === 0) {
-            return res.status(404).json({ message: 'No pending requests found.' });
+            return res.status(404).json({ message: 'No requests found.' });
         }
 
-        return res.status(200).json({ message: 'Pending requests fetched', data: allRequests });
+        return res.status(200).json({ message: 'Requests fetched', data: allRequests });
     } catch (error) {
-        console.error('Error fetching pending requests:', error);
+        console.error('Error fetching requests:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -113,6 +113,7 @@ export const withdrawRequest = async (req: AuthenticatedRequest, res: Response) 
         }
 
         // Check if a request reason is provided
+
         if (!requestReason) {
             return res.status(400).json({ message: 'Request reason must be provided' });
         }
