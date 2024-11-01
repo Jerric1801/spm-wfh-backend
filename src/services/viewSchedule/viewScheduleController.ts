@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getSchedule } from './viewScheduleService';
+import { getScheduleService } from './viewScheduleService';
 import { UserPayload } from '../auth/authService';
 
 /**
@@ -19,7 +19,7 @@ interface AuthenticatedRequest extends Request {
 export const viewSchedule = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const user: UserPayload = req.user;
-    const { startDate, endDate, departments, positions } = req.query;
+    const { startDate, endDate } = req.query;
 
     // Validating required query parameters
     if (!startDate || !endDate) {
@@ -27,8 +27,11 @@ export const viewSchedule = async (req: AuthenticatedRequest, res: Response): Pr
       return;
     }
 
-    // Let the service layer determine what schedule the user can access
-    const schedule = await getSchedule(startDate as string, endDate as string, user, departments as string[], positions as string[]);
+    // Get the appropriate schedule service instance based on the user role
+    const scheduleService = getScheduleService(user);
+
+    // Retrieve the schedule using the service
+    const schedule = await scheduleService.getSchedule(startDate as string, endDate as string);
 
     res.status(200).json(schedule);
   } catch (error) {
@@ -36,3 +39,4 @@ export const viewSchedule = async (req: AuthenticatedRequest, res: Response): Pr
     res.status(500).json({ error: 'An error occurred while fetching the schedule' });
   }
 };
+
