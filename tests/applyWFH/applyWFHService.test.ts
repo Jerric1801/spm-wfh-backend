@@ -20,7 +20,7 @@ describe("applyForWorkFromHome", () => {
 
   //////////
 
-  test("with valid inputs, successfully apply WFH (test 1)", async () => {
+  test("with valid inputs, successfully apply WFH", async () => {
 
     const mockRequestId = { rows: [{ Request_ID: 1 }] };
 
@@ -120,7 +120,7 @@ describe("applyForWorkFromHome", () => {
 
   //////////
 
-  it("should handle a long date range for work-from-home request (Test 10)", async () => {
+  it("should handle a long date range for work-from-home request", async () => {
     const mockRequestId = { rows: [{ Request_ID: 4 }] }; // Mock returning a Request_ID
     const mockCurrentRequestIds = { rows: [{ Request_ID: 1 }] };
 
