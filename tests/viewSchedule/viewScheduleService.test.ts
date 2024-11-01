@@ -9,33 +9,66 @@ jest.mock("../../src/shared/userDetails");
 const mockQuery = pool.query as jest.Mock;
 const mockGetUserDetails = getUserDetails as jest.Mock;
 
-
 describe("getScheduleService", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test("Should return an instance of HRScheduleService when user role is 1", () => {
-    const mockUser: UserPayload = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
+    const mockUser: UserPayload = {
+      Staff_ID: 1,
+      Role: "1",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "HR",
+      Email: "jerric.chan@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
+    };
     const service = getScheduleService(mockUser);
-    expect(service.constructor.name).toBe('HRScheduleService');
+    expect(service.constructor.name).toBe("HRScheduleService");
   });
 
   test("Should return an instance of EmployeeScheduleService when user role is 2", () => {
-    const mockUser: UserPayload = { Staff_ID: 1, Role: "2", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "HR Executive" };
+    const mockUser: UserPayload = {
+      Staff_ID: 1,
+      Role: "2",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "HR",
+      Email: "jerric.chan@allinone.com",
+      Country: "Singapore",
+      Position: "HR Executive",
+    };
     const service = getScheduleService(mockUser);
-    expect(service.constructor.name).toBe('EmployeeScheduleService');
+    expect(service.constructor.name).toBe("EmployeeScheduleService");
   });
 
   test("Should return an instance of ManagerScheduleService when user role is 3", () => {
-    const mockUser: UserPayload = { Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
+    const mockUser: UserPayload = {
+      Staff_ID: 1,
+      Role: "3",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "HR",
+      Email: "jerric.chan@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
+    };
     const service = getScheduleService(mockUser);
-    expect(service.constructor.name).toBe('ManagerScheduleService');
+    expect(service.constructor.name).toBe("ManagerScheduleService");
   });
 
   test("Should accurately return varied schedule of all staff in company for Role 1", async () => {
     const user: UserPayload = {
-      Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" 
+      Staff_ID: 1,
+      Role: "1",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "HR",
+      Email: "jerric.chan@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
     };
     const startDate = "2023-10-01";
     const endDate = "2023-10-01";
@@ -84,38 +117,53 @@ describe("getScheduleService", () => {
     const scheduleService = getScheduleService(user);
     const result = await scheduleService.getSchedule(startDate, endDate);
 
-    expect(result).toEqual({
-      "2023-10-01": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "IN",
-            },
-            "2": {
-              staffId: "2",
-              firstName: "John",
-              lastName: "Doe",
-              wfhType: "AM",
-            },
+    expect(result).toEqual([
+      {
+        date: "2023-10-01",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "IN",
+                  },
+                  {
+                    staffId: "2",
+                    Staff_FName: "John",
+                    Staff_LName: "Doe",
+                    WFH_Type: "AM",
+                  },
+                ],
+              },
+            ],
           },
-        },
-        Finance: {
-          Analyst: {
-            "3": {
-              staffId: "3",
-              firstName: "Jane",
-              lastName: "Smith",
-              wfhType: "PM",
-            },
+          {
+            department: "Finance",
+            teams: [
+              {
+                team: "Analyst",
+                members: [
+                  {
+                    staffId: "3",
+                    Staff_FName: "Jane",
+                    Staff_LName: "Smith",
+                    WFH_Type: "PM",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-    });
+    ]);
 
-    expect(mockQuery).toHaveBeenCalledTimes(2);  // First for fetching employees, second for WFH requests
+    expect(mockQuery).toHaveBeenCalledTimes(2); // First for fetching employees, second for WFH requests
   });
 
   test("Should accurately return varied schedule of self, reporting manager and peers for Role 2", async () => {
@@ -125,7 +173,9 @@ describe("getScheduleService", () => {
       Staff_FName: "Martyn",
       Staff_LName: "Tok",
       Dept: "Engineering",
-      Email: "example@allinone.com", Country: "Singapore", Position: "Junior Engineers" 
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Junior Engineers",
     };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
@@ -179,38 +229,50 @@ describe("getScheduleService", () => {
     const scheduleService = getScheduleService(user);
     const result = await scheduleService.getSchedule(startDate, endDate);
 
-    expect(result).toEqual({
-      "2024-11-01": {
-        "Engineering": {
-          "Manager": {
-            "4": {
-              staffId: "4",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "AM",
-            },
+    expect(result).toEqual([
+      {
+        date: "2024-11-01",
+        departments: [
+          {
+            department: "Engineering",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "4",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "AM",
+                  },
+                ],
+              },
+              {
+                team: "Junior Engineers",
+                members: [
+                  {
+                    staffId: "41",
+                    Staff_FName: "Martyn",
+                    Staff_LName: "Tok",
+                    WFH_Type: "IN",
+                  },
+                  {
+                    staffId: "42",
+                    Staff_FName: "Ethan",
+                    Staff_LName: "Tay",
+                    WFH_Type: "PM",
+                  },
+                ],
+              },
+            ],
           },
-          "Junior Engineers": {
-            "41": {
-              staffId: "41",
-              firstName: "Martyn",
-              lastName: "Tok",
-              wfhType: "IN",
-            },
-            "42": {
-              staffId: "42",
-              firstName: "Ethan",
-              lastName: "Tay",
-              wfhType: "PM",
-            },
-          },
-        },
+        ],
       },
-    });
+    ]);
 
     expect(mockGetUserDetails).toHaveBeenCalledTimes(1);
     expect(mockQuery).toHaveBeenCalledTimes(2);
-  })
+  });
 
   test("Should accurately return varied schedule for self, subordinates, peers, and reporting manager for Role 3", async () => {
     const user: UserPayload = {
@@ -219,7 +281,9 @@ describe("getScheduleService", () => {
       Staff_FName: "Chris",
       Staff_LName: "Lee",
       Dept: "Marketing",
-      Email: "example@allinone.com", Country: "Singapore", Position: "Manager" 
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
     };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
@@ -239,7 +303,7 @@ describe("getScheduleService", () => {
           Staff_LName: "Johnson",
           Dept: "Marketing",
           Position: "Executive",
-          Reporting_Manager: "4"
+          Reporting_Manager: "4",
         },
       ],
     });
@@ -253,7 +317,7 @@ describe("getScheduleService", () => {
           Staff_LName: "Lee",
           Dept: "Marketing",
           Position: "Manager",
-          Reporting_Manager: "10"
+          Reporting_Manager: "10",
         },
         {
           Staff_ID: "51",
@@ -261,7 +325,7 @@ describe("getScheduleService", () => {
           Staff_LName: "Smith",
           Dept: "Marketing",
           Position: "Manager",
-          Reporting_Manager: "10"
+          Reporting_Manager: "10",
         },
         {
           Staff_ID: "5",
@@ -269,7 +333,7 @@ describe("getScheduleService", () => {
           Staff_LName: "Mufti",
           Dept: "Marketing",
           Position: "General Manager",
-          Reporting_Manager: "1"
+          Reporting_Manager: "1",
         },
       ],
     });
@@ -280,58 +344,73 @@ describe("getScheduleService", () => {
         {
           Staff_ID: "501",
           Date: "2024-11-01",
-          WFH_Type: "AM"
+          WFH_Type: "AM",
         },
         {
           Staff_ID: "51",
           Date: "2024-11-01",
-          WFH_Type: "PM"
-        }
-      ]
+          WFH_Type: "PM",
+        },
+      ],
     });
 
     const scheduleService = getScheduleService(user);
     const result = await scheduleService.getSchedule(startDate, endDate);
 
-    expect(result).toEqual({
-      "2024-11-01": {
-        Marketing: {
-          "General Manager": {
-            "5": {
-              staffId: "5",
-              firstName: "Zara",
-              lastName: "Mufti",
-              wfhType: "IN",
-            },
+    expect(result).toEqual([
+      {
+        date: "2024-11-01",
+        departments: [
+          {
+            department: "Marketing",
+            teams: [
+              {
+                team: "Executive",
+                members: [
+                  {
+                    staffId: "501",
+                    Staff_FName: "Alice",
+                    Staff_LName: "Johnson",
+                    WFH_Type: "AM",
+                  },
+                ],
+              },
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "50",
+                    Staff_FName: "Chris",
+                    Staff_LName: "Lee",
+                    WFH_Type: "IN",
+                  },
+                  {
+                    staffId: "51",
+                    Staff_FName: "Bob",
+                    Staff_LName: "Smith",
+                    WFH_Type: "PM",
+                  },
+                ],
+              },
+              {
+                team: "General Manager",
+                members: [
+                  {
+                    staffId: "5",
+                    Staff_FName: "Zara",
+                    Staff_LName: "Mufti",
+                    WFH_Type: "IN",
+                  },
+                ],
+              },
+            ],
           },
-          Manager: {
-            "50": {
-              staffId: "50",
-              firstName: "Chris",
-              lastName: "Lee",
-              wfhType: "IN",
-            },
-            "51": {
-              staffId: "51",
-              firstName: "Bob",
-              lastName: "Smith",
-              wfhType: "PM",
-            },
-          },
-          Executive: {
-            "501": {
-              staffId: "501",
-              firstName: "Alice",
-              lastName: "Johnson",
-              wfhType: "AM",
-            },
-          },
-        },
+        ],
       },
-    });
+    ]);
 
     expect(mockGetUserDetails).toHaveBeenCalledTimes(1);
-    expect(mockQuery).toHaveBeenCalledTimes(3);
+    expect(mockQuery).toHaveBeenCalledTimes(3); // First for subordinates, second for peers, third for WFH requests
   });
 
   test("Should return 'IN' for all staff if no WFH queries have been found for date range", async () => {
@@ -341,11 +420,14 @@ describe("getScheduleService", () => {
       Staff_FName: "Jerric",
       Staff_LName: "Chan",
       Dept: "HR",
-      Email: "example@allinone.com", Country: "Singapore", Position: "Manager" 
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
     };
     const startDate = "2023-10-01";
     const endDate = "2023-10-01";
 
+    // Mock fetching employees
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
@@ -372,46 +454,61 @@ describe("getScheduleService", () => {
       ],
     });
 
+    // Mock fetching WFH requests (empty for this test case)
     mockQuery.mockResolvedValueOnce({
-      rows: [
-      ],
+      rows: [],
     });
 
     const scheduleService = getScheduleService(user);
     const result = await scheduleService.getSchedule(startDate, endDate);
 
-    expect(result).toEqual({
-      "2023-10-01": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "IN",
-            },
-            "2": {
-              staffId: "2",
-              firstName: "John",
-              lastName: "Doe",
-              wfhType: "IN",
-            },
+    expect(result).toEqual([
+      {
+        date: "2023-10-01",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "IN",
+                  },
+                  {
+                    staffId: "2",
+                    Staff_FName: "John",
+                    Staff_LName: "Doe",
+                    WFH_Type: "IN",
+                  },
+                ],
+              },
+            ],
           },
-        },
-        Finance: {
-          Analyst: {
-            "3": {
-              staffId: "3",
-              firstName: "Jane",
-              lastName: "Smith",
-              wfhType: "IN",
-            },
+          {
+            department: "Finance",
+            teams: [
+              {
+                team: "Analyst",
+                members: [
+                  {
+                    staffId: "3",
+                    Staff_FName: "Jane",
+                    Staff_LName: "Smith",
+                    WFH_Type: "IN",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-    });
+    ]);
 
-    expect(mockQuery).toHaveBeenCalledTimes(2);  // First for fetching employees, second for WFH requests
+    expect(mockQuery).toHaveBeenCalledTimes(2); // First for fetching employees, second for WFH requests
   });
 
   test("Should be able to handle multiple dates in a query", async () => {
@@ -421,11 +518,14 @@ describe("getScheduleService", () => {
       Staff_FName: "Jerric",
       Staff_LName: "Chan",
       Dept: "HR",
-      Email: "example@allinone.com", Country: "Singapore", Position: "Manager" 
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
     };
     const startDate = "2023-10-01";
     const endDate = "2023-10-03";
 
+    // Mock fetching employees
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
@@ -438,6 +538,7 @@ describe("getScheduleService", () => {
       ],
     });
 
+    // Mock fetching WFH requests
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
@@ -456,44 +557,73 @@ describe("getScheduleService", () => {
     const scheduleService = getScheduleService(user);
     const result = await scheduleService.getSchedule(startDate, endDate);
 
-    expect(result).toEqual({
-      "2023-10-01": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "AM",
-            },
+    expect(result).toEqual([
+      {
+        date: "2023-10-01",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "AM",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-      "2023-10-02": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "IN",
-            },
+      {
+        date: "2023-10-02",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "IN",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-      "2023-10-03": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "PM",
-            },
+      {
+        date: "2023-10-03",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "PM",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-    });
+    ]);
+
+    expect(mockQuery).toHaveBeenCalledTimes(2); // First for fetching employees, second for WFH requests
   });
 
   test("Should be able to handle dates across months and years in a query", async () => {
@@ -503,11 +633,14 @@ describe("getScheduleService", () => {
       Staff_FName: "Jerric",
       Staff_LName: "Chan",
       Dept: "HR",
-      Email: "example@allinone.com", Country: "Singapore", Position: "Manager" 
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
     };
     const startDate = "2024-12-31";
     const endDate = "2025-01-01";
 
+    // Mock fetching employees
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
@@ -520,6 +653,7 @@ describe("getScheduleService", () => {
       ],
     });
 
+    // Mock fetching WFH requests
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
@@ -533,39 +667,69 @@ describe("getScheduleService", () => {
     const scheduleService = getScheduleService(user);
     const result = await scheduleService.getSchedule(startDate, endDate);
 
-    expect(result).toEqual({
-      "2024-12-31": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "AM",
-            },
+    expect(result).toEqual([
+      {
+        date: "2024-12-31",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "AM",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-      "2025-01-01": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "IN",
-            },
+      {
+        date: "2025-01-01",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "IN",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-    });
+    ]);
+
+    expect(mockQuery).toHaveBeenCalledTimes(2); // First for fetching employees, second for WFH requests
   });
 
   test("Should be able to handle leap dates in a query", async () => {
-    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
+    const user: UserPayload = {
+      Staff_ID: 1,
+      Role: "1",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "HR",
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
+    };
     const startDate = "2024-02-28";
     const endDate = "2024-03-01";
 
+    // Mock fetching employees
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
@@ -578,6 +742,7 @@ describe("getScheduleService", () => {
       ],
     });
 
+    // Mock fetching WFH requests
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
@@ -591,85 +756,152 @@ describe("getScheduleService", () => {
     const scheduleService = getScheduleService(user);
     const result = await scheduleService.getSchedule(startDate, endDate);
 
-    expect(result).toEqual({
-      "2024-02-28": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "AM",
-            },
+    expect(result).toEqual([
+      {
+        date: "2024-02-28",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "AM",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-      "2024-02-29": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "IN",
-            },
+      {
+        date: "2024-02-29",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "IN",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-      "2024-03-01": {
-        HR: {
-          Manager: {
-            "1": {
-              staffId: "1",
-              firstName: "Jerric",
-              lastName: "Chan",
-              wfhType: "IN",
-            },
+      {
+        date: "2024-03-01",
+        departments: [
+          {
+            department: "HR",
+            teams: [
+              {
+                team: "Manager",
+                members: [
+                  {
+                    staffId: "1",
+                    Staff_FName: "Jerric",
+                    Staff_LName: "Chan",
+                    WFH_Type: "IN",
+                  },
+                ],
+              },
+            ],
           },
-        },
+        ],
       },
-    });
+    ]);
+
+    expect(mockQuery).toHaveBeenCalledTimes(2); // First for fetching employees, second for WFH requests
   });
 
   test("Should handle database query failure gracefully when querying for Role 1", async () => {
-    
-    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
+    const user: UserPayload = {
+      Staff_ID: 1,
+      Role: "1",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "HR",
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
+    };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
 
     mockQuery.mockRejectedValue(new Error("Database query failed"));
 
-    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch employees from the database.");
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow(
+      "Unable to retrieve schedule. Error: Unable to fetch employees from the database."
+    );
   });
 
   test("Should handle database query failure gracefully when querying for Role 2", async () => {
-    
-    const user: UserPayload = {Staff_ID: 1, Role: "2", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
+    const user: UserPayload = {
+      Staff_ID: 1,
+      Role: "2",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "Engineering",
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
+    };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
 
     mockQuery.mockRejectedValue(new Error("Database query failed"));
 
-    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch employees from the database.");
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow(
+      "Unable to retrieve schedule. Error: Unable to fetch employees from the database."
+    );
   });
 
   test("Should handle database query failure gracefully when querying for Role 3 subordinates", async () => {
-    
-    const user: UserPayload = {Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering", Email: "example@allinone.com", Country: "Singapore", Position: "Junior Engineer"  };
+    const user: UserPayload = {
+      Staff_ID: 1,
+      Role: "3",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "Engineering",
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Junior Engineer",
+    };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
 
     mockQuery.mockRejectedValue(new Error("Database query failed"));
 
-    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch employees from the database. Error: Unable to fetch subordinates from the database.");
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow(
+      "Unable to retrieve schedule. Error: Unable to fetch employees from the database. Error: Unable to fetch subordinates from the database."
+    );
   });
 
   test("Should handle database query failure gracefully when querying for Role 3 reporting manager and peers", async () => {
-    
-    const user: UserPayload = {Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
+    const user: UserPayload = {
+      Staff_ID: 1,
+      Role: "3",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "Engineering",
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
+    };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
@@ -688,18 +920,28 @@ describe("getScheduleService", () => {
           Staff_LName: "Johnson",
           Dept: "Marketing",
           Position: "Executive",
-          Reporting_Manager: "4"
+          Reporting_Manager: "4",
         },
       ],
     });
     mockQuery.mockRejectedValue(new Error("Database query failed"));
 
-    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch employees from the database. Error: Unable to fetch peers and reporting manager from the database.");
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow(
+      "Unable to retrieve schedule. Error: Unable to fetch employees from the database. Error: Unable to fetch peers and reporting manager from the database."
+    );
   });
 
   test("Should handle database query failure gracefully when querying for WFH records", async () => {
-    
-    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
+    const user: UserPayload = {
+      Staff_ID: 1,
+      Role: "1",
+      Staff_FName: "Jerric",
+      Staff_LName: "Chan",
+      Dept: "HR",
+      Email: "example@allinone.com",
+      Country: "Singapore",
+      Position: "Manager",
+    };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
@@ -724,6 +966,8 @@ describe("getScheduleService", () => {
 
     mockQuery.mockRejectedValue(new Error("Database query failed"));
 
-    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch WFH requests from the database.");
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow(
+      "Unable to retrieve schedule. Error: Unable to fetch WFH requests from the database."
+    );
   });
 });

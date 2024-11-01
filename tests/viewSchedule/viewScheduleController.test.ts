@@ -31,32 +31,52 @@ describe("viewScheduleController", () => {
   });
 
   test("should return 200 and the schedule if valid input is provided", async () => {
-    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
+    req.user = { 
+        Staff_ID: 1, 
+        Role: "1", 
+        Staff_FName: "Jerric", 
+        Staff_LName: "Chan", 
+        Dept: "HR", 
+        Email: "jerric.chan@allinone.com", 
+        Country: "Singapore", 
+        Position: "Manager" 
+    };
     req.query = { startDate: "2023-01-01", endDate: "2023-01-31" };
 
-    const mockSchedule = {
-      "2023-01-01": {
-        dept: {
-          role: {
-            staffId: {
-              staffId: "123",
-              firstName: "John",
-              lastName: "Doe",
-              wfhType: "IN",
-            },
-          },
+    const mockSchedule = [
+        {
+            date: "2023-01-01",
+            departments: [
+                {
+                    department: "dept",
+                    teams: [
+                        {
+                            team: "role",
+                            members: [
+                                {
+                                    staffId: "123",
+                                    Staff_FName: "John",
+                                    Staff_LName: "Doe",
+                                    WFH_Type: "IN",
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
         },
-      },
-    };
+    ];
+    
     mockGetScheduleService.mockReturnValue({
-      getSchedule: jest.fn().mockResolvedValue(mockSchedule),
+        getSchedule: jest.fn().mockResolvedValue(mockSchedule),
     });
 
     await viewSchedule(req as AuthenticatedRequest, res as Response);
 
     expect(statusMock).toHaveBeenCalledWith(200);
     expect(jsonMock).toHaveBeenCalledWith(mockSchedule);
-  });
+});
+
 
   test("should return 400 if startDate or endDate is missing", async () => {
     req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
