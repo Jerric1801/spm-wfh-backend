@@ -4,7 +4,22 @@ Content-Type: application/json
 
 {
   "Staff_ID": 180001,
-  "password": "P@ssword123"
+  "password": "password123"
+}
+
+
+### Apply WFH
+POST http://localhost:3000/api/apply-WFH/apply
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTgwMDAxLCJTdGFmZl9GTmFtZSI6IkVybnN0IiwiU3RhZmZfTE5hbWUiOiJTaW0iLCJDb3VudHJ5IjoiU2luZ2Fwb3JlIiwiRW1haWwiOiJFcm5zdC5TaW1AYWxsaW5vbmUuY29tLnNnIiwiUG9zaXRpb24iOiJEaXJlY3RvciIsIlJvbGUiOiIxIiwiRGVwdCI6IkNvbnN1bHRhbmN5IiwiaWF0IjoxNzMwNDMxMDA2LCJleHAiOjE3MzA0MzQ2MDZ9.cgG2WUxAhxMMhcINJYU_QHb33EK3m7f_ZLPgomYkZls
+Content-Type: application/json
+
+{
+    "dateRange": {
+      "startDate": "2024-05-01",
+      "endDate": "2024-05-04"},
+    "recurringDays": ["M","Th"],
+    "wfhType": "PM",
+    "reason": "Pick up daughter from school"
 }
 
 

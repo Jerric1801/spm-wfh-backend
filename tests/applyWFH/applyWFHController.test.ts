@@ -39,13 +39,14 @@ describe('requestWorkFromHome Controller Tests', () => {
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({
-            message: 'Please provide dateRange, wfhType, and reason.'
+            message: 'Please provide dateRange, recurringDays, wfhType, and reason.'
         });
     });
 
     it('should return 400 if wfhType is invalid', async () => {
         req.body = {
             dateRange: { startDate: '2024-10-14', endDate: '2024-10-20' },
+            recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
             wfhType: 'INVALID_TYPE',
             reason: 'Doctor appointment',
         };
@@ -54,13 +55,14 @@ describe('requestWorkFromHome Controller Tests', () => {
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({
-            message: 'Invalid wfhType. Must be one of AM, PM, or WD.'
+            message: 'Invalid work-from-home type. Must be one of AM, PM, or WD.'
         });
     });
 
     it('should return 400 if endDate is before startDate', async () => {
         req.body = {
             dateRange: { startDate: '2024-10-20', endDate: '2024-10-14' },
+            recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
             wfhType: 'AM',
             reason: 'Doctor appointment',
         };
@@ -69,7 +71,7 @@ describe('requestWorkFromHome Controller Tests', () => {
 
         expect(statusMock).toHaveBeenCalledWith(400);
         expect(jsonMock).toHaveBeenCalledWith({
-            message: 'endDate must be the same or after startDate.'
+            message: 'The end date must be the same or after the start date.'
         });
     });
 
@@ -77,6 +79,7 @@ describe('requestWorkFromHome Controller Tests', () => {
         req.user = { Staff_ID: 123 } as UserPayload;
         req.body = {
             dateRange: { startDate: '2024-10-14', endDate: '2024-10-20' },
+            recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
             wfhType: 'AM',
             reason: 'Doctor appointment',
         };
@@ -95,6 +98,7 @@ describe('requestWorkFromHome Controller Tests', () => {
         expect(mockApplyForWorkFromHome).toHaveBeenCalledWith({
             Staff_ID: 123,
             dateRange: { startDate: '2024-10-14', endDate: '2024-10-20' },
+            recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
             wfhType: 'AM',
             reason: 'Doctor appointment',
         });
@@ -109,6 +113,7 @@ describe('requestWorkFromHome Controller Tests', () => {
         req.user = { Staff_ID: 123 } as UserPayload;
         req.body = {
             dateRange: { startDate: '2024-10-14', endDate: '2024-10-20' },
+            recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
             wfhType: 'AM',
             reason: 'Doctor appointment',
         };
