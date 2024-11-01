@@ -27,6 +27,26 @@ export const viewSchedule = async (req: AuthenticatedRequest, res: Response): Pr
       return;
     }
 
+    // Validate date formats
+    const parsedStartDate = Date.parse(startDate as string);
+    const parsedEndDate = Date.parse(endDate as string);
+
+    if (isNaN(parsedStartDate)) {
+      res.status(400).json({ error: 'Invalid date format for startDate' });
+      return;
+    }
+
+    if (isNaN(parsedEndDate)) {
+      res.status(400).json({ error: 'Invalid date format for endDate' });
+      return;
+    }
+
+    // Validate that startDate is before or equal to endDate
+    if (parsedStartDate > parsedEndDate) {
+      res.status(400).json({ error: 'Start date must be before or equal to end date' });
+      return;
+    }
+
     // Get the appropriate schedule service instance based on the user role
     const scheduleService = getScheduleService(user);
 
@@ -39,4 +59,5 @@ export const viewSchedule = async (req: AuthenticatedRequest, res: Response): Pr
     res.status(500).json({ error: 'An error occurred while fetching the schedule' });
   }
 };
+
 
