@@ -10,38 +10,51 @@ interface AuthenticatedRequest extends Request {
 
 interface ApplyWFHRequestBody {
     dateRange: { startDate: string; endDate: string };
+    recurringDays: string[];
     wfhType: 'AM' | 'PM' | 'WD';
     reason: string;
 }
 
 export const requestWorkFromHome = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const user = req.user;
-        // Validate required parameters
-        const { dateRange, wfhType, reason }: ApplyWFHRequestBody = req.body;
         
-        // Check for required fields
-        if (!dateRange || !dateRange.startDate || !dateRange.endDate || !wfhType || !reason) {
-            return res.status(400).json({ message: 'Please provide dateRange, wfhType, and reason.' });
+        const user = req.user;
+        const { dateRange, recurringDays, wfhType, reason }: ApplyWFHRequestBody = req.body;
+        
+        // Check all fields provided
+        if (!dateRange || !dateRange.startDate || !dateRange.endDate || !recurringDays || !wfhType || !reason) {
+            return res.status(400).json({ message: 'Please provide dateRange, recurringDays, wfhType, and reason.' });
+        }
+
+        // Validate dateRange
+        const startDate = parseISO(dateRange.startDate);
+        const endDate = parseISO(dateRange.endDate);
+        if (isBefore(endDate, startDate)) {
+            return res.status(400).json({ message: 'The end date must be the same or after the start date.' });
+        }
+
+        // Validate recurringDays
+        const ValidRecurringDays = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
+
+        function areValidRecurringDays(recurringDays: string[]): boolean {
+            return recurringDays.every(day => ValidRecurringDays.includes(day));
+        }
+
+        if (!Array.isArray(recurringDays) || !areValidRecurringDays(recurringDays)) {
+            return res.status(400).json({ message: 'Only provide valid days of the week.' });
         }
 
         // Validate wfhType
         const validWFHTypes = ['AM', 'PM', 'WD'];
         if (!validWFHTypes.includes(wfhType)) {
-            return res.status(400).json({ message: 'Invalid wfhType. Must be one of AM, PM, or WD.' });
-        }
-
-        // Validate endDate
-        const startDate = parseISO(dateRange.startDate);
-        const endDate = parseISO(dateRange.endDate);
-        if (isBefore(endDate, startDate)) {
-            return res.status(400).json({ message: 'endDate must be the same or after startDate.' });
+            return res.status(400).json({ message: 'Invalid work-from-home type. Must be one of AM, PM, or WD.' });
         }
 
         // Create the work-from-home request object
         const workFromHomeRequest = {
             Staff_ID: user?.Staff_ID,
             dateRange,
+            recurringDays,
             wfhType,
             reason
         };
@@ -52,12 +65,21 @@ export const requestWorkFromHome = async (req: AuthenticatedRequest, res: Respon
     } catch (err) {
         console.error(err);
         
-        if (err.message === "Conflicting request dates found.") {
-            return res.status(409).json({ error: 'Conflicting request dates found. Please choose different dates.' });
-        }
+        const DEFAULT_ERROR_MESSAGE = 'Internal Server Error';
 
-        // Default to internal server error
-        res.status(500).json({ error: 'Internal Server Error' });
+        const errorResponses: Record<string, string> = {
+            "No suitable dates found.": 'No suitable dates found. Please choose a different date range or weekday.',
+            "Conflicting request dates found.": 'Conflicting request dates found. Please choose a different date range.',
+        };
+        
+        // select errorMessage if exist
+        const errorMessage = errorResponses[err.message];
+
+        if (errorMessage) {
+            return res.status(409).json({ error: errorMessage });
+        } else {
+            return res.status(500).json({ error: DEFAULT_ERROR_MESSAGE });
+        }
     }
 };
 

@@ -11,6 +11,7 @@ import mime from 'mime-types';
 export interface WorkFromHomeRequest {
     Staff_ID: number;
     dateRange: { startDate: string; endDate: string };
+    recurringDays: string[];
     wfhType: 'AM' | 'PM' | 'WD';
     reason: string;
     // document: File;
@@ -35,6 +36,23 @@ function getAllDatesInRange(start: string, end: string): string[] {
     }
 
     return dates;
+}
+
+// Helper function to filter selected recurring dates
+function filterSelectedDates(all_dates: string[], recurringDays: string[]): string[] {
+    const dayMap = {
+        'Su': 0, 
+        'M' : 1, 
+        'Tu': 2, 
+        'W' : 3, 
+        'Th': 4, 
+        'F': 5, 
+        'Sa': 6
+    };
+
+    const selectedDays = recurringDays.map(day => dayMap[day as keyof typeof dayMap]);
+
+    return all_dates.filter(date => selectedDays.includes(new Date(date).getDay()));
 }
 
 // Helper function to check for conflicting request dates
@@ -65,7 +83,13 @@ async function checkForConflicts(dates: string[], staffId: number): Promise<bool
 // Main Function
 export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
     try {
-        const dates = getAllDatesInRange(request.dateRange.startDate, request.dateRange.endDate);
+        const all_dates = getAllDatesInRange(request.dateRange.startDate, request.dateRange.endDate);
+        const dates = filterSelectedDates(all_dates, request.recurringDays);
+
+        // Check for available dates after filtering
+        if (dates.length === 0) {
+            throw new Error("No suitable dates found.")
+        }
 
         // Check for conflicting request dates
         const conflicts = await checkForConflicts(dates, request.Staff_ID);

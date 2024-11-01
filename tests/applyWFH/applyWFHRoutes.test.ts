@@ -62,6 +62,7 @@ describe('POST /apply', () => {
       .post('/wfh/apply')  // Apply WFH route
       .send({
         dateRange: { startDate: '2024-10-14', endDate: '2024-10-20' },
+        recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
         wfhType: 'AM',
         reason: 'Doctor appointment',
       });
@@ -79,6 +80,7 @@ describe('POST /apply', () => {
       .set('Authorization', 'Bearer invalidToken')
       .send({
         dateRange: { startDate: '2024-10-14', endDate: '2024-10-20' },
+        recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
         wfhType: 'AM',
         reason: 'Doctor appointment',
       });
@@ -113,6 +115,7 @@ describe('POST /apply', () => {
       .set('Authorization', 'Bearer validToken')  // Valid token
       .send({
         dateRange: { startDate: '2024-10-14', endDate: '2024-10-20' },
+        recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
         wfhType: 'AM',
         reason: 'Doctor appointment',
       });
@@ -149,6 +152,7 @@ describe('POST /apply', () => {
       .set('Authorization', 'Bearer validToken')
       .send({
         dateRange: { startDate: '2024-10-14', endDate: '2024-10-20' },
+        recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
         wfhType: 'AM',
         reason: 'Doctor appointment',
       });

@@ -18,7 +18,9 @@ describe("applyForWorkFromHome", () => {
     jest.restoreAllMocks();  // Restore original implementations after each test
 });
 
-  test("with valid inputs, successfully apply WFH (test 1)", async () => {
+  //////////
+
+  test("with valid inputs, successfully apply WFH", async () => {
 
     const mockRequestId = { rows: [{ Request_ID: 1 }] };
 
@@ -33,6 +35,7 @@ describe("applyForWorkFromHome", () => {
     const request: WorkFromHomeRequest = {
       Staff_ID: 123456,
       dateRange: { startDate: "2024-10-01", endDate: "2024-10-03" },
+      recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
       wfhType: "AM",
       reason: "Personal reasons",
     };
@@ -48,7 +51,7 @@ describe("applyForWorkFromHome", () => {
     ]);
   });
 
-
+  //////////
 
   it("should generate correct dates for a single day request", async () => {
     const mockRequestId = { rows: [{ Request_ID: 2 }] };
@@ -66,6 +69,7 @@ describe("applyForWorkFromHome", () => {
     const request: WorkFromHomeRequest = {
       Staff_ID: 123456,
       dateRange: { startDate: "2024-10-05", endDate: "2024-10-05" },
+      recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
       wfhType: "PM",
       reason: "Medical appointment",
     };
@@ -79,8 +83,45 @@ describe("applyForWorkFromHome", () => {
     ]);
   });
 
-  it("should handle a long date range for work-from-home request (Test 10)", async () => {
-    const mockRequestId = { rows: [{ Request_ID: 3 }] }; // Mock returning a Request_ID
+  //////////
+
+  it("should generate correct dates for recurring days in a request", async () => {
+    const mockRequestId = { rows: [{ Request_ID: 3 }] };
+    const mockCurrentRequestIds = { rows: [{ Request_ID: 1 }] };
+
+    mockQuery
+      .mockResolvedValueOnce(mockCurrentRequestIds) // Mock selection of current existing Request_IDs
+      .mockResolvedValueOnce({}) // Mock selection of conflict dates
+      .mockResolvedValueOnce({}) // Mock sequence setting query 1
+      .mockResolvedValueOnce({}) // Mock sequence setting query 2
+      .mockResolvedValueOnce(mockRequestId) // Mock the generation of Request_ID
+      .mockResolvedValueOnce({ rowCount: 1 }) // Mock insertion into Request table
+      .mockResolvedValueOnce({ rowCount: 1 }); // Mock insertion into RequestDetails table
+
+    const request: WorkFromHomeRequest = {
+      Staff_ID: 123456,
+      dateRange: { startDate: "2024-10-07", endDate: "2024-10-20" },
+      recurringDays: ["Tu","Th"],
+      wfhType: "AM",
+      reason: "Child CCA Performance",
+    };
+
+    const result = await applyForWorkFromHome(request);
+
+    expect(mockQuery).toHaveBeenCalledTimes(7);
+    expect(result.details).toHaveLength(4); // Number of dates registered
+    expect(result.details).toEqual([
+      { Request_ID: 3, Date: "2024-10-08", WFH_Type: "AM" },
+      { Request_ID: 3, Date: "2024-10-10", WFH_Type: "AM" },
+      { Request_ID: 3, Date: "2024-10-15", WFH_Type: "AM" },
+      { Request_ID: 3, Date: "2024-10-17", WFH_Type: "AM" },
+    ]);
+  });
+
+  //////////
+
+  it("should handle a long date range for work-from-home request", async () => {
+    const mockRequestId = { rows: [{ Request_ID: 4 }] }; // Mock returning a Request_ID
     const mockCurrentRequestIds = { rows: [{ Request_ID: 1 }] };
 
     mockQuery
@@ -95,6 +136,7 @@ describe("applyForWorkFromHome", () => {
     const request: WorkFromHomeRequest = {
       Staff_ID: 123456,
       dateRange: { startDate: "2025-01-01", endDate: "2025-12-31" },
+      recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
       wfhType: "WD",
       reason: "Year-long project",
     };
@@ -104,19 +146,21 @@ describe("applyForWorkFromHome", () => {
     expect(pool.query).toHaveBeenCalledTimes(7);
     expect(result.details).toHaveLength(365); // Each day in 2024
     expect(result.details[0]).toEqual({
-      Request_ID: 3,
+      Request_ID: 4,
       Date: "2025-01-01",
       WFH_Type: "WD",
     });
     expect(result.details[364]).toEqual({
-      Request_ID: 3,
+      Request_ID: 4,
       Date: "2025-12-31",
       WFH_Type: "WD",
     });
   });
 
+  //////////
+
   it("should reject work-from-home request if it conflicts existing requests", async () => {
-    const mockCurrentRequestIds = { rows: [{ Request_ID: 1 }] };
+    const mockCurrentRequestIds = { rows: [{ Request_ID: 5 }] };
     const mockConflictDates = { rowCount: 20 };
 
     mockQuery
@@ -126,6 +170,7 @@ describe("applyForWorkFromHome", () => {
     const request: WorkFromHomeRequest = {
       Staff_ID: 123456,
       dateRange: { startDate: "2024-01-01", endDate: "2024-12-31" },
+      recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
       wfhType: "WD",
       reason: "Year-long project",
     };
@@ -134,6 +179,24 @@ describe("applyForWorkFromHome", () => {
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
+  //////////
+
+  it("should reject work-from-home request if there are no available weekdays in date range provided", async () => {
+
+    const request: WorkFromHomeRequest = {
+      Staff_ID: 123456,
+      dateRange: { "startDate": "2024-05-01", "endDate": "2024-05-04" },
+      recurringDays: ["Tu"],
+      wfhType: "PM",
+      reason: "Pick up daughter from school"
+    };
+
+    await expect(applyForWorkFromHome(request)).rejects.toThrow("No suitable dates found.");
+    expect(pool.query).toHaveBeenCalledTimes(0);
+  });
+
+  //////////
+
   it("should handle database errors gracefully", async () => {
     // Mock the pool.query method to throw an error
     mockQuery.mockRejectedValueOnce(new Error("Database connection error"));
@@ -141,6 +204,7 @@ describe("applyForWorkFromHome", () => {
     const request: WorkFromHomeRequest = {
       Staff_ID: 123456,
       dateRange: { startDate: "2024-10-01", endDate: "2024-10-03" },
+      recurringDays: ["Su","M","Tu","W","Th","F","Sa"],
       wfhType: "AM",
       reason: "Personal reasons",
     };
