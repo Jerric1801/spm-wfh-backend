@@ -125,10 +125,7 @@ abstract class ScheduleService {
         // Confirm the change
         console.log(`Final WFH Type for Staff ID ${request.Staff_ID} on ${formattedDate}: ${staffDetails.wfhType}`);
     });
-    
 
-        console.log(schedule['2023-10-01'])
-        console.log(schedule['2023-10-01']['HR']['Manager']["1"])
         return schedule;
     }
 
