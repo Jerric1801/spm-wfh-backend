@@ -7,11 +7,7 @@ import pool from '../config/db';
  * @returns {Promise<{ reportingManager: string }>} - A promise that resolves to an object containing the reporting manager.
  */
 const getUserDetails = async (staffId: number): Promise<{ reportingManager: string, position: string }> => {
-  const query = `
-    SELECT "Reporting_Manager", "Position"
-    FROM public."Employees"
-    WHERE "Staff_ID" = $1
-  `;
+  const query = `SELECT "Reporting_Manager", "Position" FROM public."Employees" WHERE "Staff_ID" = $1`;
 
   const result = await pool.query(query, [staffId]);
 
