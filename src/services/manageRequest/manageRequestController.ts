@@ -32,7 +32,7 @@ export const manageRequest = async (req: Request, res: Response) => {
     }
 };
 
-// New function to view pending requests
+
 export const viewPendingRequests = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
@@ -46,7 +46,7 @@ export const viewPendingRequests = async (req: AuthenticatedRequest, res: Respon
 
         // Check if there are no pending requests
         if (pendingRequests.length === 0) {
-            return res.status(404).json({ message: 'No pending requests found.' });
+            return res.status(200).json({ message: 'No pending requests found.' });
         }
 
         return res.status(200).json({ message: 'Pending requests fetched', data: pendingRequests });

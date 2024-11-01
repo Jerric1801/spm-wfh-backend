@@ -51,6 +51,12 @@ export const requestWorkFromHome = async (req: AuthenticatedRequest, res: Respon
         res.status(200).json({ message: 'Work-from-home request submitted successfully', data: result});
     } catch (err) {
         console.error(err);
+        
+        if (err.message === "Conflicting request dates found.") {
+            return res.status(409).json({ error: 'Conflicting request dates found. Please choose different dates.' });
+        }
+
+        // Default to internal server error
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
