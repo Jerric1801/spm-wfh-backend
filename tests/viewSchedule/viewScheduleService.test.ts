@@ -629,4 +629,100 @@ describe("getScheduleService", () => {
       },
     });
   });
+
+  test("Should handle database query failure gracefully when querying for Role 1", async () => {
+    
+    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    const startDate = "2024-11-01";
+    const endDate = "2024-11-01";
+    const service = getScheduleService(user);
+
+    mockQuery.mockRejectedValue(new Error("Database query failed"));
+
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch employees from the database.");
+  });
+
+  test("Should handle database query failure gracefully when querying for Role 2", async () => {
+    
+    const user: UserPayload = {Staff_ID: 1, Role: "2", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering" };
+    const startDate = "2024-11-01";
+    const endDate = "2024-11-01";
+    const service = getScheduleService(user);
+
+    mockQuery.mockRejectedValue(new Error("Database query failed"));
+
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch employees from the database.");
+  });
+
+  test("Should handle database query failure gracefully when querying for Role 3 subordinates", async () => {
+    
+    const user: UserPayload = {Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering" };
+    const startDate = "2024-11-01";
+    const endDate = "2024-11-01";
+    const service = getScheduleService(user);
+
+    mockQuery.mockRejectedValue(new Error("Database query failed"));
+
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch employees from the database. Error: Unable to fetch subordinates from the database.");
+  });
+
+  test("Should handle database query failure gracefully when querying for Role 3 reporting manager and peers", async () => {
+    
+    const user: UserPayload = {Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering" };
+    const startDate = "2024-11-01";
+    const endDate = "2024-11-01";
+    const service = getScheduleService(user);
+
+    mockGetUserDetails.mockResolvedValueOnce({
+      reportingManager: "5",
+      Position: "Manager",
+    });
+
+    // Mock fetching subordinates success
+    mockQuery.mockResolvedValueOnce({
+      rows: [
+        {
+          Staff_ID: "501",
+          Staff_FName: "Alice",
+          Staff_LName: "Johnson",
+          Dept: "Marketing",
+          Position: "Executive",
+          Reporting_Manager: "4"
+        },
+      ],
+    });
+    mockQuery.mockRejectedValue(new Error("Database query failed"));
+
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch employees from the database. Error: Unable to fetch peers and reporting manager from the database.");
+  });
+
+  test("Should handle database query failure gracefully when querying for WFH records", async () => {
+    
+    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    const startDate = "2024-11-01";
+    const endDate = "2024-11-01";
+    const service = getScheduleService(user);
+    mockQuery.mockResolvedValueOnce({
+      rows: [
+        {
+          Staff_ID: "1",
+          Staff_FName: "Jerric",
+          Staff_LName: "Chan",
+          Dept: "HR",
+          Position: "Manager",
+        },
+        {
+          Staff_ID: "2",
+          Staff_FName: "John",
+          Staff_LName: "Doe",
+          Dept: "HR",
+          Position: "Manager",
+        },
+      ],
+    });
+
+    mockQuery.mockRejectedValue(new Error("Database query failed"));
+
+    await expect(service.getSchedule(startDate, endDate)).rejects.toThrow("Unable to retrieve schedule. Error: Unable to fetch WFH requests from the database.");
+  });
 });
