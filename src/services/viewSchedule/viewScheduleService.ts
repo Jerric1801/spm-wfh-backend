@@ -96,12 +96,12 @@ abstract class ScheduleService {
         });
 
         wfhRequests.forEach(request => {
-            const formattedDate = format(parseISO(request.Date), "yyyy-MM-dd");
+            const formattedDate = format(request.Date, "yyyy-MM-dd");
             const employeeInfo = employeeIndex[request.Staff_ID];
             const staffDetails = schedule[formattedDate][employeeInfo.dept][employeeInfo.position][request.Staff_ID];
             staffDetails.wfhType = request.WFH_Type;
         });
-
+        console.log(schedule);
         return schedule;
     }
 
