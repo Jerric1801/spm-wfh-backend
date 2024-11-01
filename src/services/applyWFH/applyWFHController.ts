@@ -82,3 +82,4 @@ export const requestWorkFromHome = async (req: AuthenticatedRequest, res: Respon
         }
     }
 };
+

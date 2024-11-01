@@ -3,23 +3,8 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "Staff_ID": 180001,
+  "Staff_ID": 151596,
   "password": "password123"
-}
-
-
-### Apply WFH
-POST http://localhost:3000/api/apply-WFH/apply
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTgwMDAxLCJTdGFmZl9GTmFtZSI6IkVybnN0IiwiU3RhZmZfTE5hbWUiOiJTaW0iLCJDb3VudHJ5IjoiU2luZ2Fwb3JlIiwiRW1haWwiOiJFcm5zdC5TaW1AYWxsaW5vbmUuY29tLnNnIiwiUG9zaXRpb24iOiJEaXJlY3RvciIsIlJvbGUiOiIxIiwiRGVwdCI6IkNvbnN1bHRhbmN5IiwiaWF0IjoxNzMwNDMxMDA2LCJleHAiOjE3MzA0MzQ2MDZ9.cgG2WUxAhxMMhcINJYU_QHb33EK3m7f_ZLPgomYkZls
-Content-Type: application/json
-
-{
-    "dateRange": {
-      "startDate": "2024-05-01",
-      "endDate": "2024-05-04"},
-    "recurringDays": ["M","Th"],
-    "wfhType": "PM",
-    "reason": "Pick up daughter from school"
 }
 
 
@@ -37,7 +22,7 @@ Content-Type: application/json
 
 ### View All Pending Requests by reporting_manager's staff_id retrieved during authentication
 GET http://localhost:3000/api/manage-request/pending
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTdGFmZl9JRCI6MTgwMDAxLCJSb2xlIjoiMSIsIkRlcHQiOiJDb25zdWx0YW5jeSIsImlhdCI6MTcyOTE0MjMxNiwiZXhwIjoxNzI5MTQ1OTE2fQ.sm4p4KE8gRdy0RVOyLCEwAQyTWRhJFrRUA-ylXRPRuU
+Authorization: Bearer <token>
 Content-Type: application/json
 ### if reporting manager id is 180001
 # {
@@ -71,8 +56,19 @@ Content-Type: application/json
 # {
 #   "message": "No pending requests found."
 # }
+GET http://localhost:3000/api/manage-request/getStaff
+Authorization: Bearer <token>
+Content-Type: application/json
 
 
+
+GET http://localhost:3000/api/manage-request/pending/count
+Authorization: Bearer <token>
+Content-Type: application/json
+# if manager is 180001 and has 3 pending requests
+# {
+#     "pendingCount": 3
+# }
 ### Approve Request
 POST http://localhost:3000/api/manage-request
 {
@@ -124,10 +120,15 @@ POST http://localhost:3000/api/manage-request
 ###    "message": "Invalid action"
 ###}
 
-
+POST http://localhost:3000/api/manage-request/withdraw
+Authorization: Bearer <token>
+Content-Type: application/json
+{
+  "Request_ID":1,
+  "Request_Reason":"Change of Plans"
+}
 
 // Expected: Status code 200, with a list of all approved work-from-home requests for the given date range.
-
 
 ### Ping Server Health Endpoint
 GET http://localhost:3000/health
