@@ -65,32 +65,70 @@ abstract class ScheduleService {
         const schedule: { [date: string]: { [department: string]: { [role: string]: { [staffId: string]: StaffDetails } } } } = {};
         const allDates = this.getAllDatesInRange(startDate, endDate);
 
+        const employeeIndex: { [staffId: string]: { dept: string; position: string } } = {};
         employees.forEach(emp => {
-            const staff: StaffDetails = {
-                staffId: emp.Staff_ID,
-                firstName: emp.Staff_FName,
-                lastName: emp.Staff_LName,
-                wfhType: "IN",
-            };
+          employeeIndex[emp.Staff_ID] = { dept: emp.Dept, position: emp.Position };
+          allDates.forEach(date => {
+              if (!schedule[date]) schedule[date] = {};
+              if (!schedule[date][emp.Dept]) schedule[date][emp.Dept] = {};
+              if (!schedule[date][emp.Dept][emp.Position]) schedule[date][emp.Dept][emp.Position] = {};
+      
+              // Create a new StaffDetails object for each date to avoid reference issues
+              const staff: StaffDetails = {
+                  staffId: emp.Staff_ID,
+                  firstName: emp.Staff_FName,
+                  lastName: emp.Staff_LName,
+                  wfhType: "IN",
+              };
+      
+              schedule[date][emp.Dept][emp.Position][emp.Staff_ID] = staff;
+          });
+      });
+      
 
-            allDates.forEach(date => {
-                if (!schedule[date]) schedule[date] = {};
-                if (!schedule[date][emp.Dept]) schedule[date][emp.Dept] = {};
-                if (!schedule[date][emp.Dept][emp.Position]) schedule[date][emp.Dept][emp.Position] = {};
 
-                schedule[date][emp.Dept][emp.Position][emp.Staff_ID] = staff;
-            });
-        });
+      wfhRequests.forEach(request => {
+        const formattedDate = format(parseISO(request.Date), "yyyy-MM-dd");
+    
+        console.log(`Processing WFH request for Staff ID: ${request.Staff_ID} on Date: ${formattedDate}`);
+        
+        if (!schedule[formattedDate]) {
+            console.warn(`Date ${formattedDate} not found in schedule.`);
+            return;
+        }
+    
+        const employeeInfo = employeeIndex[request.Staff_ID];
+        if (!employeeInfo) {
+            console.warn(`Employee with Staff ID ${request.Staff_ID} not found in index.`);
+            return;
+        }
+    
+        if (!schedule[formattedDate][employeeInfo.dept]) {
+            console.warn(`Department ${employeeInfo.dept} not found in schedule for date ${formattedDate}.`);
+            return;
+        }
+    
+        if (!schedule[formattedDate][employeeInfo.dept][employeeInfo.position]) {
+            console.warn(`Position ${employeeInfo.position} not found in department ${employeeInfo.dept} for date ${formattedDate}.`);
+            return;
+        }
+    
+        // Access the specific StaffDetails object and update its wfhType
+        const staffDetails = schedule[formattedDate][employeeInfo.dept][employeeInfo.position][request.Staff_ID];
+        const previousWFHType = staffDetails.wfhType;
+        console.log(`Previous WFH Type for Staff ID ${request.Staff_ID} on ${formattedDate}: ${previousWFHType}`);
+        
+        // Update the wfhType
+        staffDetails.wfhType = request.WFH_Type;
+        console.log(`Updated WFH Type for Staff ID ${request.Staff_ID} on ${formattedDate} to ${request.WFH_Type}`);
+        
+        // Confirm the change
+        console.log(`Final WFH Type for Staff ID ${request.Staff_ID} on ${formattedDate}: ${staffDetails.wfhType}`);
+    });
+    
 
-        wfhRequests.forEach(request => {
-            const formattedDate = format(parseISO(request.Date), "yyyy-MM-dd");
-            employees.forEach(emp => {
-                if (emp.Staff_ID === request.Staff_ID && schedule[formattedDate]?.[emp.Dept]?.[emp.Position]?.[emp.Staff_ID]) {
-                    schedule[formattedDate][emp.Dept][emp.Position][emp.Staff_ID].wfhType = request.WFH_Type;
-                }
-            });
-        });
-
+        console.log(schedule['2023-10-01'])
+        console.log(schedule['2023-10-01']['HR']['Manager']["1"])
         return schedule;
     }
 
