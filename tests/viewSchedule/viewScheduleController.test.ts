@@ -31,7 +31,7 @@ describe("viewScheduleController", () => {
   });
 
   test("should return 200 and the schedule if valid input is provided", async () => {
-    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
     req.query = { startDate: "2023-01-01", endDate: "2023-01-31" };
 
     const mockSchedule = {
@@ -59,7 +59,7 @@ describe("viewScheduleController", () => {
   });
 
   test("should return 400 if startDate or endDate is missing", async () => {
-    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
     req.query = { startDate: "2023-01-01" }; // Missing endDate
 
     await viewSchedule(req as AuthenticatedRequest, res as Response);
@@ -71,7 +71,7 @@ describe("viewScheduleController", () => {
   });
 
   test("should return 400 if startDate is in the wrong format", async () => {
-    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
     req.query = { startDate: "wrong-format", endDate: "2023-01-31" };
 
     await viewSchedule(req as AuthenticatedRequest, res as Response);
@@ -84,13 +84,7 @@ describe("viewScheduleController", () => {
 
   test("should return 400 if endDate is in the wrong format", async () => {
     req.query = { startDate: "2023-01-01", endDate: "wrong-format" };
-    req.user = {
-      Staff_ID: 1,
-      Role: "1",
-      Staff_FName: "Jerric",
-      Staff_LName: "Chan",
-      Dept: "HR",
-    };
+    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
 
     await viewSchedule(req as AuthenticatedRequest, res as Response);
 
@@ -101,13 +95,7 @@ describe("viewScheduleController", () => {
   });
 
   test("should return 400 if startDate is after endDate", async () => {
-    req.user = {
-      Staff_ID: 1,
-      Role: "1",
-      Staff_FName: "Jerric",
-      Staff_LName: "Chan",
-      Dept: "HR",
-    };
+    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
     req.query = { startDate: "2023-02-01", endDate: "2023-01-01" }; // startDate is after endDate
 
     await viewSchedule(req as AuthenticatedRequest, res as Response);
@@ -119,7 +107,7 @@ describe("viewScheduleController", () => {
   });
 
   test("should return 500 if viewScheduleService throws an error", async () => {
-    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    req.user = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
     req.query = { startDate: "2023-01-01", endDate: "2023-01-31" };
 
     mockGetScheduleService.mockReturnValue({

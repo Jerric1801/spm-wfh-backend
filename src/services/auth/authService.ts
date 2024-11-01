@@ -9,6 +9,9 @@ export interface UserPayload {
   Staff_ID: number;
   Staff_FName: string;
   Staff_LName: string;
+  Country: string;
+  Email: string;
+  Position:string;
   Role: string;
   Dept: string;
 }
@@ -27,14 +30,25 @@ export const authenticateUser = async (Staff_ID: number, password: string) => {
     // Compare provided password with hashed_password in the database
     const isPasswordValid = await bcrypt.compare(password, user.hashed_password);
     if (!isPasswordValid) {
-      throw new Error('Invalid password');
+      throw new Error('Invalid credentials');
+    }
+
+    // 2. Fetch employee details from Employee table
+    const employeeResult = await pool.query('SELECT * FROM "Employees" WHERE "Staff_ID" = $1', [Staff_ID]);
+    const employee = employeeResult.rows[0];
+
+    if (!employee) {
+      throw new Error('Employee not found');
     }
 
     // Generate JWT token
     const payload: UserPayload = {
       Staff_ID: user.Staff_ID,
-      Staff_FName : user.Staff_FName,
-      Staff_LName : user.Staff_LName,
+      Staff_FName: employee.Staff_FName,
+      Staff_LName: employee.Staff_LName,
+      Country: employee.Country,
+      Email: employee.Email,
+      Position: employee.Position,
       Role: user.Role,
       Dept: user.Dept
     };

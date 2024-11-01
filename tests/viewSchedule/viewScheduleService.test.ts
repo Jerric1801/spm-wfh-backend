@@ -16,30 +16,26 @@ describe("getScheduleService", () => {
   });
 
   test("Should return an instance of HRScheduleService when user role is 1", () => {
-    const mockUser: UserPayload = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", };
+    const mockUser: UserPayload = { Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
     const service = getScheduleService(mockUser);
     expect(service.constructor.name).toBe('HRScheduleService');
   });
 
   test("Should return an instance of EmployeeScheduleService when user role is 2", () => {
-    const mockUser: UserPayload = { Staff_ID: 1, Role: "2", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", };
+    const mockUser: UserPayload = { Staff_ID: 1, Role: "2", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "HR Executive" };
     const service = getScheduleService(mockUser);
     expect(service.constructor.name).toBe('EmployeeScheduleService');
   });
 
   test("Should return an instance of ManagerScheduleService when user role is 3", () => {
-    const mockUser: UserPayload = { Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", };
+    const mockUser: UserPayload = { Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" };
     const service = getScheduleService(mockUser);
     expect(service.constructor.name).toBe('ManagerScheduleService');
   });
 
   test("Should accurately return varied schedule of all staff in company for Role 1", async () => {
     const user: UserPayload = {
-      Staff_ID: 1,
-      Role: "1",
-      Staff_FName: "Jerric",
-      Staff_LName: "Chan",
-      Dept: "HR",
+      Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "jerric.chan@allinone.com", Country: "Singapore", Position: "Manager" 
     };
     const startDate = "2023-10-01";
     const endDate = "2023-10-01";
@@ -129,6 +125,7 @@ describe("getScheduleService", () => {
       Staff_FName: "Martyn",
       Staff_LName: "Tok",
       Dept: "Engineering",
+      Email: "example@allinone.com", Country: "Singapore", Position: "Junior Engineers" 
     };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
@@ -222,6 +219,7 @@ describe("getScheduleService", () => {
       Staff_FName: "Chris",
       Staff_LName: "Lee",
       Dept: "Marketing",
+      Email: "example@allinone.com", Country: "Singapore", Position: "Manager" 
     };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
@@ -343,6 +341,7 @@ describe("getScheduleService", () => {
       Staff_FName: "Jerric",
       Staff_LName: "Chan",
       Dept: "HR",
+      Email: "example@allinone.com", Country: "Singapore", Position: "Manager" 
     };
     const startDate = "2023-10-01";
     const endDate = "2023-10-01";
@@ -422,6 +421,7 @@ describe("getScheduleService", () => {
       Staff_FName: "Jerric",
       Staff_LName: "Chan",
       Dept: "HR",
+      Email: "example@allinone.com", Country: "Singapore", Position: "Manager" 
     };
     const startDate = "2023-10-01";
     const endDate = "2023-10-03";
@@ -503,6 +503,7 @@ describe("getScheduleService", () => {
       Staff_FName: "Jerric",
       Staff_LName: "Chan",
       Dept: "HR",
+      Email: "example@allinone.com", Country: "Singapore", Position: "Manager" 
     };
     const startDate = "2024-12-31";
     const endDate = "2025-01-01";
@@ -561,7 +562,7 @@ describe("getScheduleService", () => {
   });
 
   test("Should be able to handle leap dates in a query", async () => {
-    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
     const startDate = "2024-02-28";
     const endDate = "2024-03-01";
 
@@ -632,7 +633,7 @@ describe("getScheduleService", () => {
 
   test("Should handle database query failure gracefully when querying for Role 1", async () => {
     
-    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
@@ -644,7 +645,7 @@ describe("getScheduleService", () => {
 
   test("Should handle database query failure gracefully when querying for Role 2", async () => {
     
-    const user: UserPayload = {Staff_ID: 1, Role: "2", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering" };
+    const user: UserPayload = {Staff_ID: 1, Role: "2", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
@@ -656,7 +657,7 @@ describe("getScheduleService", () => {
 
   test("Should handle database query failure gracefully when querying for Role 3 subordinates", async () => {
     
-    const user: UserPayload = {Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering" };
+    const user: UserPayload = {Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering", Email: "example@allinone.com", Country: "Singapore", Position: "Junior Engineer"  };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
@@ -668,7 +669,7 @@ describe("getScheduleService", () => {
 
   test("Should handle database query failure gracefully when querying for Role 3 reporting manager and peers", async () => {
     
-    const user: UserPayload = {Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering" };
+    const user: UserPayload = {Staff_ID: 1, Role: "3", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "Engineering", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);
@@ -698,7 +699,7 @@ describe("getScheduleService", () => {
 
   test("Should handle database query failure gracefully when querying for WFH records", async () => {
     
-    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR" };
+    const user: UserPayload = {Staff_ID: 1, Role: "1", Staff_FName: "Jerric", Staff_LName: "Chan", Dept: "HR", Email: "example@allinone.com", Country: "Singapore", Position: "Manager"  };
     const startDate = "2024-11-01";
     const endDate = "2024-11-01";
     const service = getScheduleService(user);

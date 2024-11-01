@@ -88,7 +88,7 @@ describe('POST /apply', () => {
 
   test('should call requestWorkFromHome if the user is authenticated', async () => {
     // Simulate a valid token
-    const mockUser: UserPayload = { Staff_ID: 123, Role: 'Employee', Staff_FName: 'Jerric', Staff_LName: 'Chan', Dept: 'Engineering' };
+    const mockUser: UserPayload = { Staff_ID: 123, Role: 'Employee', Staff_FName: 'Jerric', Staff_LName: 'Chan', Dept: 'Engineering', Country: 'Singapore', Email: 'jerric.chan@example.com', Position: 'Software Engineer' };
     mockJwtVerify.mockImplementationOnce((token, secret, callback) => {
       callback(null, mockUser);  // Valid token
     });
@@ -114,7 +114,7 @@ describe('POST /apply', () => {
 
   test('should return 500 if the requestWorkFromHome controller throws an error', async () => {
     // Simulate a valid token
-    const mockUser: UserPayload = { Staff_ID: 123, Role: 'Employee', Staff_FName: 'Jerric', Staff_LName: 'Chan', Dept: 'Engineering' };
+    const mockUser: UserPayload = { Staff_ID: 123, Role: 'Employee', Staff_FName: 'Jerric', Staff_LName: 'Chan', Dept: 'Engineering', Country: 'Singapore', Email: 'jerric.chan@example.com', Position: 'Software Engineer' };
     mockJwtVerify.mockImplementationOnce((token, secret, callback) => {
       callback(null, mockUser);  // Valid token
     });
