@@ -88,42 +88,10 @@ abstract class ScheduleService {
 
 
       wfhRequests.forEach(request => {
-        const formattedDate = format(parseISO(request.Date), "yyyy-MM-dd");
-    
-        console.log(`Processing WFH request for Staff ID: ${request.Staff_ID} on Date: ${formattedDate}`);
-        
-        if (!schedule[formattedDate]) {
-            console.warn(`Date ${formattedDate} not found in schedule.`);
-            return;
-        }
-    
+        const formattedDate = format(parseISO(request.Date), "yyyy-MM-dd");  
         const employeeInfo = employeeIndex[request.Staff_ID];
-        if (!employeeInfo) {
-            console.warn(`Employee with Staff ID ${request.Staff_ID} not found in index.`);
-            return;
-        }
-    
-        if (!schedule[formattedDate][employeeInfo.dept]) {
-            console.warn(`Department ${employeeInfo.dept} not found in schedule for date ${formattedDate}.`);
-            return;
-        }
-    
-        if (!schedule[formattedDate][employeeInfo.dept][employeeInfo.position]) {
-            console.warn(`Position ${employeeInfo.position} not found in department ${employeeInfo.dept} for date ${formattedDate}.`);
-            return;
-        }
-    
-        // Access the specific StaffDetails object and update its wfhType
         const staffDetails = schedule[formattedDate][employeeInfo.dept][employeeInfo.position][request.Staff_ID];
-        const previousWFHType = staffDetails.wfhType;
-        console.log(`Previous WFH Type for Staff ID ${request.Staff_ID} on ${formattedDate}: ${previousWFHType}`);
-        
-        // Update the wfhType
         staffDetails.wfhType = request.WFH_Type;
-        console.log(`Updated WFH Type for Staff ID ${request.Staff_ID} on ${formattedDate} to ${request.WFH_Type}`);
-        
-        // Confirm the change
-        console.log(`Final WFH Type for Staff ID ${request.Staff_ID} on ${formattedDate}: ${staffDetails.wfhType}`);
     });
 
         return schedule;
@@ -172,62 +140,38 @@ class EmployeeScheduleService extends ScheduleService {
 
 // Manager Service for role 3
 class ManagerScheduleService extends ScheduleService {
-    protected async fetchEmployees(): Promise<EmployeeRecord[]> {
-        const subordinates = await this.fetchSubordinates(this.user.Staff_ID.toString());
-        const userDetails = await getUserDetails(this.user.Staff_ID);
-        const peers = await this.fetchPeers(userDetails.reportingManager);
-        return this.mergeUniqueEmployees([...subordinates, ...peers]);
-    }
+  protected async fetchEmployees(): Promise<EmployeeRecord[]> {
+      const subordinates = await this.fetchSubordinates(this.user.Staff_ID.toString());
+      const userDetails = await getUserDetails(this.user.Staff_ID);
+      const peers = await this.fetchPeersAndReportingManager(userDetails.reportingManager.toString());
+      return this.mergeUniqueEmployees([...subordinates, ...peers]);
+  }
 
-    private async fetchSubordinates(managerId: string): Promise<EmployeeRecord[]> {
-        const { conditions, whereParams } = this.buildWhereClause(managerId);
-        const query = `
-            SELECT e."Staff_ID", e."Staff_FName", e."Staff_LName", e."Dept", e."Position"
-            FROM public."Employees" e
-            ${conditions ? `WHERE ${conditions}` : ""}
-        `;
-        const result = await pool.query(query, whereParams);
-        return result.rows as EmployeeRecord[];
-    }
+  private async fetchSubordinates(managerId: string): Promise<EmployeeRecord[]> {
+      const query = `
+          SELECT e."Staff_ID", e."Staff_FName", e."Staff_LName", e."Dept", e."Position"
+          FROM public."Employees" e
+          WHERE e."Reporting_Manager" = $1
+      `;
+      const result = await pool.query(query, [managerId]);
+      return result.rows as EmployeeRecord[];
+  }
 
-    private async fetchPeers(reportingManager: string): Promise<EmployeeRecord[]> {
-        const { conditions, whereParams } = this.buildWhereClause(reportingManager);
-        const query = `
-            SELECT e."Staff_ID", e."Staff_FName", e."Staff_LName", e."Dept", e."Position"
-            FROM public."Employees" e
-            ${conditions ? `WHERE ${conditions}` : ""}
-        `;
-        const result = await pool.query(query, whereParams);
-        return result.rows as EmployeeRecord[];
-    }
+  private async fetchPeersAndReportingManager(reportingManager: string): Promise<EmployeeRecord[]> {
+      const query = `
+          SELECT e."Staff_ID", e."Staff_FName", e."Staff_LName", e."Dept", e."Position"
+          FROM public."Employees" e
+          WHERE e."Reporting_Manager" = $1 OR e."Staff_ID" = $2
+      `;
+      const result = await pool.query(query, [reportingManager, Number(reportingManager)]);
+      return result.rows as EmployeeRecord[];
+  }
 
-    private buildWhereClause(reportingManager: string, departmentArray: string[] = [], positionArray: string[] = []): { conditions: string; whereParams: (string | string[] | number)[] } {
-        const conditions: string[] = [];
-        const whereParams: (string | string[] | number)[] = [];
-
-        if (reportingManager) {
-            conditions.push(`e."Reporting_Manager" = $${whereParams.length + 1} OR e."Staff_ID" = $${whereParams.length + 2}`);
-            whereParams.push(reportingManager, Number(reportingManager));
-        }
-
-        if (departmentArray.length) {
-            conditions.push(`e."Dept" = ANY($${whereParams.length + 1}::text[])`);
-            whereParams.push(departmentArray);
-        }
-
-        if (positionArray.length) {
-            conditions.push(`e."Position" = ANY($${whereParams.length + 1}::text[])`);
-            whereParams.push(positionArray);
-        }
-
-        return { conditions: conditions.join(" AND "), whereParams };
-    }
-
-    private mergeUniqueEmployees(employees: EmployeeRecord[]): EmployeeRecord[] {
-        const uniqueEmployees = new Map<string, EmployeeRecord>();
-        employees.forEach(emp => uniqueEmployees.set(emp.Staff_ID, emp));
-        return Array.from(uniqueEmployees.values());
-    }
+  private mergeUniqueEmployees(employees: EmployeeRecord[]): EmployeeRecord[] {
+      const uniqueEmployees = new Map<string, EmployeeRecord>();
+      employees.forEach(emp => uniqueEmployees.set(emp.Staff_ID, emp));
+      return Array.from(uniqueEmployees.values());
+  }
 }
 
 // Factory function to return the appropriate service instance
@@ -239,7 +183,5 @@ export function getScheduleService(user: UserPayload): ScheduleService {
             return new EmployeeScheduleService(user);
         case "3":
             return new ManagerScheduleService(user);
-        default:
-            throw new Error("Invalid user role");
     }
 }
