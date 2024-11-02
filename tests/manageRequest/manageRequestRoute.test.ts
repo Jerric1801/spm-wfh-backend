@@ -196,4 +196,163 @@ describe('manageRequestRoute', () => {
       expect(response.body).toEqual({ message: 'Internal server error' });
     });
   });
+
+  describe('GET /requests/allRequest', () => {
+    test('should return pending requests for authenticated and authorized user', async () => {
+      const mockRequests = [
+        { Request_ID: 1, Current_Status: 'Pending', Staff_ID: 150118 },
+        { Request_ID: 2, Current_Status: 'Pending', Staff_ID: 150119 },
+      ];
+      mockQuery.mockResolvedValueOnce({ rows: mockRequests });
+
+      const response = await request(app).get('/requests/allRequest').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Requests fetched', data: mockRequests });
+    });
+
+    test('should return 403 if user does not have the correct role', async () => {
+      mockJwtVerify.mockImplementation((token, secret, callback) => {
+        callback(null, { Staff_ID: '150118', Role: '2' }); // Mock user with insufficient role
+      });
+
+      const response = await request(app).get('/requests/allRequest').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ message: 'Access denied - insufficient permissions.' });
+    });
+
+    test('should return 404 if are no requests are found', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [] });
+
+      const response = await request(app).get('/requests/allRequest').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: 'No requests found.' });
+    });
+
+    test('should return 500 if an error occurs', async () => {
+      mockQuery.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app).get('/requests/allRequest').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    });
+  });
+
+  describe('GET /requests/allRequest', () => {
+    test('should return all requests for authenticated and authorized user', async () => {
+      const mockRequests = [
+        { Request_ID: 1, Current_Status: 'Pending', Staff_ID: 150118 },
+        { Request_ID: 2, Current_Status: 'Approved', Staff_ID: 150119 },
+      ];
+      mockQuery.mockResolvedValueOnce({ rows: mockRequests });
+
+      const response = await request(app).get('/requests/allRequest').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Requests fetched', data: mockRequests });
+    });
+
+    test('should return 403 if user is not authorized', async () => {
+      mockJwtVerify.mockImplementation((token, secret, callback) => {
+        callback(null, { Staff_ID: '150118', Role: '2' }); // Unauthorized role
+      });
+
+      const response = await request(app).get('/requests/allRequest').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ message: 'Access denied - insufficient permissions.' });
+    });
+
+    test('should return 404 if no requests are found', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [] });
+
+      const response = await request(app).get('/requests/allRequest').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: 'No requests found.' });
+    });
+
+    test('should return 500 if an error occurs', async () => {
+      mockQuery.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app).get('/requests/allRequest').set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    });
+  });
+ 
+  describe('POST /requests/withdraw', () => {
+    test('should withdraw a request if requestId is valid and reason is provided', async () => {
+      mockQuery.mockResolvedValueOnce({ rowCount: 1 });
+
+      const response = await request(app)
+        .post('/requests/withdraw')
+        .send({ requestId: 1, requestReason: 'Personal reasons' })
+        .set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Request withdrawn successfully' });
+    });
+
+    test('should return 400 if request reason is not provided', async () => {
+      const response = await request(app)
+        .post('/requests/withdraw')
+        .send({ requestId: 2 })
+        .set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ message: 'Request reason must be provided' });
+    });
+
+    test('should return 404 if request is not found or already processed', async () => {
+      mockQuery.mockResolvedValueOnce({ rowCount: 0 });
+
+      const response = await request(app)
+        .post('/requests/withdraw')
+        .send({ requestId: 999, requestReason: 'Valid reason' })
+        .set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: 'Request not found or already processed' });
+    });
+
+    test('should return 500 if an error occurs', async () => {
+      mockQuery.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app)
+        .post('/requests/withdraw')
+        .send({ requestId: 4, requestReason: 'Valid reason' })
+        .set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    });
+  });
+  describe('GET /requests/pending/count', () => {
+    test('should return the pending request count for authorized user', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [{ pending_count: '5' }] });
+
+      const response = await request(app)
+        .get('/requests/pending/count')
+        .set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ pendingCount: 5 });
+    });
+
+    test('should return 403 if user is not authorized', async () => {
+      mockJwtVerify.mockImplementation((token, secret, callback) => {
+        callback(null, { Staff_ID: '150118', Role: '2' });
+      });
+
+      const response = await request(app)
+        .get('/requests/pending/count')
+        .set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ message: 'Access denied - insufficient permissions.' });
+    });
+
+    test('should return 500 if an error occurs', async () => {
+      mockQuery.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app)
+        .get('/requests/pending/count')
+        .set('Authorization', 'Bearer valid-token');
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    });
+  });
+
+
 });
