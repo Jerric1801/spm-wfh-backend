@@ -1,144 +1,136 @@
 // src/services/applyWFH/applyWFHService.ts
-import pool from '../../config/db';  // Ensure this points to your database configuration
+import pool from '../../config/db';
 import { format, addDays, parseISO } from 'date-fns';
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import awsConfig from '../../config/aws';
-import { Request, Response } from 'express';
-import multer from 'multer';
-import mime from 'mime-types'; 
+import mime from 'mime-types';
 
-export interface WorkFromHomeRequest {
+interface WorkFromHomeRequest {
     Staff_ID: number;
-    dateRange: { startDate: string; endDate: string };
-    recurringDays: string[];
-    wfhType: 'AM' | 'PM' | 'WD';
-    reason: string;
-    // document: File;
+    Dates: Date[];
+    WFHType: 'AM' | 'PM' | 'WD';
+    WFHReason: string;
+    Document: string[]; // Array of base64 strings
 }
 
 interface S3UploadParams {
     Bucket: string;
     Key: string;
     ContentType: string;
-}
-
-// Helper function to generate all dates between two dates
-function getAllDatesInRange(start: string, end: string): string[] {
-    const startDate = parseISO(start);
-    const endDate = parseISO(end);
-    const dates = [];
-    let currentDate = startDate;
-
-    while (currentDate <= endDate) {
-        dates.push(format(currentDate, 'yyyy-MM-dd')); // Format as string
-        currentDate = addDays(currentDate, 1); // Add one day
-    }
-
-    return dates;
-}
-
-// Helper function to filter selected recurring dates
-function filterSelectedDates(all_dates: string[], recurringDays: string[]): string[] {
-    const dayMap = {
-        'Su': 0, 
-        'M' : 1, 
-        'Tu': 2, 
-        'W' : 3, 
-        'Th': 4, 
-        'F': 5, 
-        'Sa': 6
-    };
-
-    const selectedDays = recurringDays.map(day => dayMap[day as keyof typeof dayMap]);
-
-    return all_dates.filter(date => selectedDays.includes(new Date(date).getDay()));
+    Body: Buffer;
 }
 
 // Helper function to check for conflicting request dates
 async function checkForConflicts(dates: string[], staffId: number): Promise<boolean> {
-
     const currentRequestIdsResult = await pool.query(`
         SELECT "Request_ID" FROM public."Request" WHERE "Staff_ID" = $1
     `, [staffId]);
-    
-    console.log("CURRENT REQUEST IDs QUERY CALLED");
 
     if (!currentRequestIdsResult.rows) {
-        return false; // no results so no conflicts
+        return false;
     }
-    
+
     const requestIds = currentRequestIdsResult.rows.map(row => row.Request_ID);
 
     const conflictsResult = await pool.query(`
         SELECT "Date" FROM public."RequestDetails"
         WHERE "Request_ID" = ANY($1) AND "Date" = ANY($2)
     `, [requestIds, dates]);
-    
-    console.log("CONFLICT REQUEST QUERY CALLED");
 
     return conflictsResult.rowCount > 0;
 }
+export const handleDocumentUpload = async (base64Data: string): Promise<string> => {
+    const s3Client = new S3Client({
+        region: awsConfig.region,
+        credentials: {
+            accessKeyId: awsConfig.accessKeyId,
+            secretAccessKey: awsConfig.secretAccessKey,
+        },
+    });
+    console.log("B64",base64Data)
+    // Extract the file type from the base64 string
+    const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+        console.error("Invalid base64 string:", base64Data); // Log the invalid base64 string
+        throw new Error('Invalid base64 string format');
+    }
+
+    const fileType = matches[1];
+    const fileBuffer = Buffer.from(matches[2], 'base64'); 
+
+
+    const fileExtension = mime.extension(fileType) || 'txt';
+    const fileName = `reasons/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExtension}`;
+
+    const params: S3UploadParams = {
+        Bucket: awsConfig.bucketName,
+        Key: fileName,
+        ContentType: fileType,
+        Body: fileBuffer // Store the file content directly
+    };
+
+    const command = new PutObjectCommand(params);
+
+    try {
+        const uploadResult = await s3Client.send(command);
+        console.log("File uploaded successfully:", uploadResult);
+
+        // Generate a pre-signed URL for accessing the uploaded file (optional)
+        const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
+        return fileName; // Return the file name stored in S3
+    } catch (err) {
+        console.error("Error uploading file:", err);
+        throw new Error(`Failed to upload document to S3.`);
+    }
+};
 
 // Main Function
 export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
     try {
-        const all_dates = getAllDatesInRange(request.dateRange.startDate, request.dateRange.endDate);
-        const dates = filterSelectedDates(all_dates, request.recurringDays);
+        // --- Call handleDocumentUpload for each document ---
+        const uploadPromises = request.Document.map(handleDocumentUpload);
+        const uploadedDocumentUrls = await Promise.all(uploadPromises);
 
-        // Check for available dates after filtering
-        if (dates.length === 0) {
-            throw new Error("No suitable dates found.")
-        }
+        // --- Update the request object with the document URLs ---
+        request.Document = uploadedDocumentUrls; // Update the Document property directly
 
         // Check for conflicting request dates
-        const conflicts = await checkForConflicts(dates, request.Staff_ID);
+        const formattedDates = request.Dates.map(date => format(date, 'yyyy-MM-dd'));
+        const conflicts = await checkForConflicts(formattedDates, request.Staff_ID);
         if (conflicts) {
             throw new Error("Conflicting request dates found.");
         }
-        
+
         // Ensure sequence is correct
         await pool.query(`
             ALTER TABLE public."Request"
             ALTER COLUMN "Request_ID" SET DEFAULT nextval('public."Request_Request_ID_seq"')
         `);
 
-        console.log("ALTER TABLE QUERY CALLED");
-
         await pool.query(`
             SELECT setval('public."Request_Request_ID_seq"', (SELECT MAX("Request_ID") FROM public."Request"))
         `);
 
-        console.log("SELECT setval QUERY CALLED");
-        
         // Generate a unique Request_ID
         const requestIdQuery = await pool.query('SELECT nextval(\'public."Request_Request_ID_seq"\') AS "Request_ID"');
-
-        console.log("GENERATE REQUEST_ID QUERY CALLED");
 
         // Extract the Request_ID
         const requestId = requestIdQuery.rows[0].Request_ID;
 
-        console.log(requestIdQuery)
-        console.log(requestId)
-
-        // Insert the request into the Request table
+        // Insert the request into the Request table (include Document URLs)
         const requestQuery = await pool.query(
-            'INSERT INTO public."Request" ("Request_ID", "Staff_ID", "Current_Status", "Created_At", "Last_Updated", "Request_Reason", "Manager_Reason") VALUES ($1, $2, $3, NOW(), NOW(), $4, $5)',
-            [requestId, request.Staff_ID, 'Pending', request.reason, '']
+            'INSERT INTO public."Request" ("Request_ID", "Staff_ID", "Current_Status", "Created_At", "Last_Updated", "Request_Reason", "Manager_Reason", "Document") VALUES ($1, $2, $3, NOW(), NOW(), $4, $5, $6)',
+            [requestId, request.Staff_ID, 'Pending', request.WFHReason, '', request.Document]
         );
 
-        console.log("INSERT REQUEST QUERY CALLED; Success Status: ", requestQuery.rowCount > 0);
-        
-        // Insert the work-from-home details into the RequestDetails table for each date in the range
-        const requestDetails = dates.map(date => ({
+        // Insert the work-from-home details into the RequestDetails table
+        const requestDetails = request.Dates.map(date => ({
             Request_ID: requestId,
-            Date: date,
-            WFH_Type: request.wfhType
+            Date: format(date, 'yyyy-MM-dd'), // Format the date
+            WFH_Type: request.WFHType
         }));
 
-        // Bulk insert into RequestDetails
-        // NOTE: WFH Request Reason is currently not included
         const details_columns = '("Request_ID", "Date", "WFH_Type")';
         const details_values = requestDetails.map(rd => `(${rd.Request_ID}, '${rd.Date}', '${rd.WFH_Type}')`).join(', ');
 
@@ -146,72 +138,13 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
             `INSERT INTO public."RequestDetails" ${details_columns} VALUES ${details_values}`
         );
 
-        console.log("INSERT REQUEST DETAILS QUERY CALLED; Success Status: ", requestDetailsQuery.rowCount > 0);
-        console.log("ALL EXECUTION COMPLETE")
-        // Return the created request with details
+        // Return the created request with details (you might want to include document URLs here)
         return {
-            details: requestDetails
+            details: requestDetails,
+            // ... other data you want to return
         };
     } catch (err) {
         console.error("Failed to apply for work-from-home:", err);
         throw err;
-    }
-};
-
-
-
-export const handleDocumentUpload = async (req: Request, res: Response) => {
-    try {
-        const upload = multer();
-        upload.single('file')(req, res, async (err: any) => {
-            if (err) {
-                console.error("Multer error:", err);
-                return res.status(500).json({ message: 'Error processing file' });
-            }
-
-            if (!req.file) {
-                return res.status(400).json({ message: 'No file uploaded' });
-            }
-
-            const s3Client = new S3Client({
-                region: awsConfig.region,
-                credentials: {
-                    accessKeyId: awsConfig.accessKeyId,
-                    secretAccessKey: awsConfig.secretAccessKey,
-                },
-            });
-
-            const contentType = mime.lookup(req.file.originalname) || req.file.mimetype; 
-
-            const params: S3UploadParams = {
-                Bucket: awsConfig.bucketName,
-                Key: `reasons/${req.file.originalname}`,
-                ContentType: contentType
-            };
-            
-            const command = new PutObjectCommand(params);
-            const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 }); 
-
-            const response = await fetch(presignedUrl, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': contentType,
-                },
-                body: req.file.buffer
-            });
-
-
-            if (!response.ok) {
-                console.error('S3 upload failed:', response.status, await response.text()); 
-                return res.status(500).json({ 
-                    message: 'File upload failed.',
-                    error: 'Failed to upload file to S3.' 
-                });
-            }
-            res.status(200).json({ message: 'File uploaded successfully!' });
-        });
-    } catch (error: any) { // Type error as any
-        console.error('Error uploading file:', error);
-        res.status(500).json({ message: 'Error uploading file' });
     }
 };

@@ -10,6 +10,7 @@ export const up = function (knex: Knex): Promise<void> {
         table.timestamp('Last_Updated').defaultTo(knex.fn.now()); // Last updated timestamp
         table.string('Request_Reason').notNullable();
         table.string('Manager_Reason')
+        table.specificType('Document', 'varchar(255) ARRAY');
     });
 };
 
