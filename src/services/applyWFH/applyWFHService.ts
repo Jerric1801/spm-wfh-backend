@@ -40,6 +40,7 @@ async function checkForConflicts(dates: string[], staffId: number): Promise<bool
 
     return conflictsResult.rowCount > 0;
 }
+
 export const handleDocumentUpload = async (base64Data: string): Promise<string> => {
     const s3Client = new S3Client({
         region: awsConfig.region,
