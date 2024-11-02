@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { approveRequest, rejectRequest, getPendingRequests, getStaffRequests,withdrawRequestService,getPendingRequestCount } from './manageRequestService'; // Assuming getPendingRequests exists
+import { approveRequest, rejectRequest, getPendingRequests, getStaffRequests,withdrawRequestService,getPendingRequestCount, getRequests } from './manageRequestService'; // Assuming getPendingRequests exists
 import { UserPayload } from '../auth/authService'; // Assuming UserPayload defines user data structure
 
 interface AuthenticatedRequest extends Request {
@@ -88,16 +88,16 @@ export const viewRequests = async (req: AuthenticatedRequest, res: Response) => 
         }
 
         // Fetch pending requests where the reporting manager matches the current user's staff ID
-        const pendingRequests = await getPendingRequests(user.Staff_ID.toString());
+        const allRequests = await getRequests(user.Staff_ID.toString());
 
         // Check if there are no pending requests
-        if (pendingRequests.length === 0) {
-            return res.status(200).json({ message: 'No pending requests found.' });
+        if (allRequests.length === 0) {
+            return res.status(200).json({ message: 'No requests found.' });
         }
 
-        return res.status(200).json({ message: 'Pending requests fetched', data: pendingRequests });
+        return res.status(200).json({ message: 'Requests fetched', data: allRequests });
     } catch (error) {
-        console.error('Error fetching pending requests:', error);
+        console.error('Error fetching requests:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -113,6 +113,7 @@ export const withdrawRequest = async (req: AuthenticatedRequest, res: Response) 
         }
 
         // Check if a request reason is provided
+
         if (!requestReason) {
             return res.status(400).json({ message: 'Request reason must be provided' });
         }

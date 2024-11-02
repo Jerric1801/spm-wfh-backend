@@ -1,4 +1,4 @@
-import { getPendingRequests, approveRequest, rejectRequest } from '../../src/services/manageRequest/manageRequestService';
+import { getPendingRequests, approveRequest, rejectRequest , getRequests,getStaffRequests,withdrawRequestService, getPendingRequestCount} from '../../src/services/manageRequest/manageRequestService';
 import pool from '../../src/config/db';
 
 jest.mock('../../src/config/db');
@@ -112,4 +112,132 @@ describe('manageRequestService', () => {
       await expect(rejectRequest(2, 'Some valid reason')).rejects.toThrow('Database error');
     });
   });
+
+  
+describe('getAllRequests', () => { 
+  test('should fetch all requests for a given managerStaffId', async () => { 
+    const mockRequests = [
+      {
+        Request_ID: 5,
+        Staff_ID: 180005,
+        Current_Status: 'Pending',
+        Created_At: "2024-03-03T00:00:00.000Z",
+        Last_Updated: "2024-03-10T00:00:00.000Z",
+        Request_Reason: 'Urgent deadline',
+        Manager_Reason: ''
+      },
+      {
+        Request_ID: 45,
+        Staff_ID: 180013,
+        Current_Status: 'Rejected',
+        Created_At: "2024-02-21T00:00:00.000Z",
+        Last_Updated: "2024-04-28T00:00:00.000Z",
+        Request_Reason: 'Policy change',
+        Manager_Reason: 'Invalid Reason'
+      },
+      {
+        Request_ID: 3,
+        Staff_ID: 180019,
+        Current_Status: 'Pending',
+        Created_At: "2024-03-11T00:00:00.000Z",
+        Last_Updated: "2024-05-03T00:00:00.000Z",
+        Request_Reason: 'Policy change',
+        Manager_Reason: ''
+      },
+      {
+        Request_ID: 44,
+        Staff_ID: 180021,
+        Current_Status: 'Approved',
+        Created_At: "2024-06-01T00:00:00.000Z",
+        Last_Updated: "2024-10-02T00:00:00.000Z",
+        Request_Reason: 'Team restructuring',
+        Manager_Reason: ''
+      },
+      {
+        Request_ID: 14,
+        Staff_ID: 180025,
+        Current_Status: 'Pending',
+        Created_At: "2024-03-13T00:00:00.000Z",
+        Last_Updated: "2024-07-18T00:00:00.000Z",
+        Request_Reason: 'Urgent deadline',
+        Manager_Reason: ''
+      },
+      {
+        Request_ID: 29,
+        Staff_ID: 180033,
+        Current_Status: 'Rejected',
+        Created_At: "2024-03-04T00:00:00.000Z",
+        Last_Updated: "2024-07-01T00:00:00.000Z",
+        Request_Reason: 'Training requirement',
+        Manager_Reason: 'Invalid Reason'
+      }
+    ];
+    
+    // Mock query result
+    mockQuery.mockResolvedValueOnce({ rows: mockRequests });
+
+    // Execute function
+    const result = await getRequests('180001');
+
+    // Test assertions
+    expect(mockQuery).toHaveBeenCalledWith(expect.any(String), ['180001']);
+    expect(result).toEqual(mockRequests);
+  });
+
+  test('should throw an error if query fails', async () => {
+    // Mock a rejected query
+    mockQuery.mockRejectedValueOnce(new Error('Database error'));
+
+    // Expect an error to be thrown
+    await expect(getRequests('180001')).rejects.toThrow('Database error');
+  });
+});
+describe('getRequests', () => {
+  test('should fetch all requests for a given managerStaffId', async () => {
+    const mockRequests = [
+      { Request_ID: 1, Current_Status: 'Pending', Staff_ID: 150118 },
+      { Request_ID: 2, Current_Status: 'Approved', Staff_ID: 150119 },
+    ];
+    mockQuery.mockResolvedValueOnce({ rows: mockRequests });
+
+    const result = await getRequests('150118');
+    expect(mockQuery).toHaveBeenCalledWith(expect.any(String), ['150118']);
+    expect(result).toEqual(mockRequests);
+  });
+
+  test('should throw an error if query fails', async () => {
+    mockQuery.mockRejectedValueOnce(new Error('Database error'));
+    await expect(getRequests('150118')).rejects.toThrow('Database error');
+  });
+});
+
+describe('withdrawRequestService', () => {
+  test('should withdraw a request if it exists', async () => {
+    mockQuery.mockResolvedValueOnce({ rowCount: 1 });
+
+    const result = await withdrawRequestService(1, '150118', 'Valid reason');
+    expect(mockQuery).toHaveBeenCalledWith(expect.any(String), [1, '150118', 'Valid reason']);
+    expect(result.rowCount).toBe(1);
+  });
+
+  test('should throw an error if query fails', async () => {
+    mockQuery.mockRejectedValueOnce(new Error('Database error'));
+    await expect(withdrawRequestService(1, '150118', 'Valid reason')).rejects.toThrow('Database error');
+  });
+});
+describe('getPendingRequestCount', () => {
+  test('should return the pending request count for a managerStaffId', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [{ pending_count: '5' }] });
+
+    const result = await getPendingRequestCount('150118');
+    expect(mockQuery).toHaveBeenCalledWith(expect.any(String), ['150118']);
+    expect(result).toBe(5);
+  });
+
+  test('should throw an error if query fails', async () => {
+    mockQuery.mockRejectedValueOnce(new Error('Database error'));
+    await expect(getPendingRequestCount('150118')).rejects.toThrow('Database error');
+  });
+});
+
 });
