@@ -11,7 +11,7 @@ interface WorkFromHomeRequest {
     Dates: Date[];
     WFHType: 'AM' | 'PM' | 'WD';
     WFHReason: string;
-    Document: string[]; // Array of base64 strings
+    Document?: string[]; // Array of base64 strings
 }
 
 interface S3UploadParams {
@@ -23,6 +23,7 @@ interface S3UploadParams {
 
 // Helper function to check for conflicting request dates
 async function checkForConflicts(dates: string[], staffId: number): Promise<boolean> {
+    console.log(dates);
     const currentRequestIdsResult = await pool.query(`
         SELECT "Request_ID" FROM public."Request" WHERE "Staff_ID" = $1
     `, [staffId]);
@@ -34,8 +35,12 @@ async function checkForConflicts(dates: string[], staffId: number): Promise<bool
     const requestIds = currentRequestIdsResult.rows.map(row => row.Request_ID);
 
     const conflictsResult = await pool.query(`
-        SELECT "Date" FROM public."RequestDetails"
-        WHERE "Request_ID" = ANY($1) AND "Date" = ANY($2)
+        SELECT rd."Date" 
+        FROM public."RequestDetails" rd
+        JOIN public."Request" r ON rd."Request_ID" = r."Request_ID"
+        WHERE rd."Request_ID" = ANY($1) 
+          AND rd."Date" = ANY($2) 
+          AND r."Current_Status" != 'Withdrawn'
     `, [requestIds, dates]);
 
     return conflictsResult.rowCount > 0;
@@ -90,11 +95,15 @@ export const handleDocumentUpload = async (base64Data: string): Promise<string> 
 export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
     try {
         // --- Call handleDocumentUpload for each document ---
-        const uploadPromises = request.Document.map(handleDocumentUpload);
-        const uploadedDocumentUrls = await Promise.all(uploadPromises);
-
-        // --- Update the request object with the document URLs ---
-        request.Document = uploadedDocumentUrls; // Update the Document property directly
+        console.log("reached service")
+        if (request.Document) {
+            const uploadPromises = request.Document.map(handleDocumentUpload);
+            const uploadedDocumentUrls = await Promise.all(uploadPromises);
+            // --- Update the request object with the document URLs ---
+            request.Document = uploadedDocumentUrls; // Update the Document property directly
+        } else {
+            request.Document = [];
+        }
 
         // Check for conflicting request dates
         const formattedDates = request.Dates.map(date => format(date, 'yyyy-MM-dd'));
@@ -119,6 +128,8 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
         // Extract the Request_ID
         const requestId = requestIdQuery.rows[0].Request_ID;
 
+
+
         // Insert the request into the Request table (include Document URLs)
         const requestQuery = await pool.query(
             'INSERT INTO public."Request" ("Request_ID", "Staff_ID", "Current_Status", "Created_At", "Last_Updated", "Request_Reason", "Manager_Reason", "Document") VALUES ($1, $2, $3, NOW(), NOW(), $4, $5, $6)',
@@ -126,6 +137,7 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
         );
 
         // Insert the work-from-home details into the RequestDetails table
+        console.log(request.Dates);
         const requestDetails = request.Dates.map(date => ({
             Request_ID: requestId,
             Date: format(date, 'yyyy-MM-dd'), // Format the date

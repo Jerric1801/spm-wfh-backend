@@ -20,17 +20,19 @@ interface WorkFromHomeRequest {
     Dates: Date[];    // Dates are now parsed as Date objects
     WFHType: 'AM' | 'PM' | 'WD';
     WFHReason: string;
-    Document: string[];
+    Document?: string[];
 }
 
 export const requestWorkFromHome = async (req: AuthenticatedRequest, res: Response) => {
     try {
+        console.log("reached controller")
         const user = req.user;
         const { Dates, WFHType, WFHReason, Document }: ApplyWFHRequestBody = req.body;
 
         // Check all fields provided
-        if (!Dates || !WFHType || !WFHReason || !Document) {
-            return res.status(400).json({ message: 'Please provide Dates, WFHType, WFHReason, and Document.' });
+        if (!Dates || !WFHType || !WFHReason) {
+            console.log('Please provide Dates, WFHType and WFHReason')
+            return res.status(400).json({ message: 'Please provide Dates, WFHType and WFHReason' });
         }
 
         // Validate Dates (assuming they are ISO date strings)
@@ -44,6 +46,7 @@ export const requestWorkFromHome = async (req: AuthenticatedRequest, res: Respon
         // Validate WFHType
         const validWFHTypes = ['AM', 'PM', 'WD'];
         if (!validWFHTypes.includes(WFHType)) {
+            console.log("Invalid work-from-home type. Must be one of AM, PM, or WD.")
             return res.status(400).json({ message: 'Invalid work-from-home type. Must be one of AM, PM, or WD.' });
         }
 
@@ -53,12 +56,12 @@ export const requestWorkFromHome = async (req: AuthenticatedRequest, res: Respon
             Dates: parsedDates, 
             WFHType,
             WFHReason,
-            Document 
+            ...(Document && { Document })
         };
 
         // Call the service to apply for work-from-home
         const result = await applyForWorkFromHome(workFromHomeRequest);
-        res.status(200).json({ message: 'Work-from-home request submitted successfully', data: result });
+        return res.status(200).json({ message: 'Work-from-home request submitted successfully', data: result });
 
     } catch (err) {
         console.error(err);
