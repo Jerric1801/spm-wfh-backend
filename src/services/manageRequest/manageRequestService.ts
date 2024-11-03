@@ -5,16 +5,19 @@ import awsConfig from "../../config/aws";
 // import { format, addDays, parseISO } from 'date-fns';
 
 const getRecurringDates = (dates: Date[]): string[] => {
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; // Corrected order
   const recurringDays: string[] = [];
 
-  // Create a set to store unique days of the week
+  // Create a set to store unique days of the week (in UTC)
   const uniqueDays = new Set(
-    dates.map((date) => daysOfWeek[new Date(date).getDay()])
+    dates.map((date) => {
+      const dateUTC = new Date(date); // No need to convert if already in UTC
+      return daysOfWeek[dateUTC.getUTCDay()]; 
+    })
   );
 
   // If there are more than 2 unique days, it's likely recurring
-  if (uniqueDays.size > 2) {
+  if (uniqueDays.size > 1) {
     uniqueDays.forEach((day) => recurringDays.push(day));
   }
 
@@ -227,9 +230,14 @@ export const getStaffRequests = async (staffID: string) => {
     // Consolidate by Request_ID, calculate recurring dates, and fetch documents
     const consolidatedRequests = await Promise.all(
       rows.map(async (row) => {
-        // Calculate recurring dates
-        const recurringDates = getRecurringDates(row.dates);
 
+        const sortedDates = (row.dates || []).sort(
+          (a: Date, b: Date) => a.getTime() - b.getTime()
+        );
+        console.log(sortedDates)
+        // Calculate recurring dates
+        const recurringDates = getRecurringDates(sortedDates);
+        console.log("rec dates:", recurringDates)
         // Fetch documents from S3
         let documentUrls = [];
         if (Array.isArray(row.Document) && row.Document.length > 0) {
