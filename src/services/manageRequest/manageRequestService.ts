@@ -1,9 +1,25 @@
 import pool from "../../config/db";
-import { S3Client, GetObjectCommand} from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import awsConfig from "../../config/aws";
 // import { format, addDays, parseISO } from 'date-fns';
 
+const getRecurringDates = (dates: Date[]): string[] => {
+  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const recurringDays: string[] = [];
+
+  // Create a set to store unique days of the week
+  const uniqueDays = new Set(
+    dates.map((date) => daysOfWeek[new Date(date).getDay()])
+  );
+
+  // If there are more than 2 unique days, it's likely recurring
+  if (uniqueDays.size > 2) {
+    uniqueDays.forEach((day) => recurringDays.push(day));
+  }
+
+  return recurringDays;
+};
 
 // Function to fetch pending requests
 const getDocumentFromS3 = async (key: string): Promise<string> => {
@@ -11,7 +27,7 @@ const getDocumentFromS3 = async (key: string): Promise<string> => {
     region: awsConfig.region,
     credentials: {
       accessKeyId: awsConfig.accessKeyId,
-      secretAccessKey: awsConfig.secretAccessKey,   
+      secretAccessKey: awsConfig.secretAccessKey,
 
     },
   });
@@ -26,23 +42,29 @@ const getDocumentFromS3 = async (key: string): Promise<string> => {
     const command = new GetObjectCommand(params);
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 }); // URL expires in 15 minutes
 
-    return presignedUrl; 
+    return presignedUrl;
   } catch (error) {
     console.error("Error fetching document from S3:", error);
-    throw error; 
+    throw error;
   }
 };
-
 
 export const getPendingRequests = async (managerStaffId: string) => {
   try {
     // SQL query to fetch requests
     const query = `
-          SELECT r.*, e."Staff_FName", e."Staff_LName" 
-          FROM public."Request" r
-          INNER JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
-          WHERE r."Current_Status" = 'Pending'
-          AND e."Reporting_Manager" = $1
+      SELECT 
+          r.*,
+          e."Staff_FName",
+          e."Staff_LName",
+          array_agg(rd."Date") as dates,
+          array_agg(rd."WFH_Type") as wfh_types
+      FROM public."Request" r
+      INNER JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
+      LEFT JOIN public."RequestDetails" rd ON r."Request_ID" = rd."Request_ID"
+      WHERE r."Current_Status" = 'Pending'
+      AND e."Reporting_Manager" = $1
+      GROUP BY r."Request_ID", e."Staff_FName", e."Staff_LName";  
       `;
 
     const result = await pool.query(query, [managerStaffId]);
@@ -59,26 +81,29 @@ export const getPendingRequests = async (managerStaffId: string) => {
           documentUrls = await Promise.all(documentPromises);
         }
 
+        // Sort the dates and get the date range
         const sortedDates = (request.dates || []).sort(
           (a: Date, b: Date) => a.getTime() - b.getTime()
         );
-
         const dateRange =
           sortedDates.length > 0
             ? `${sortedDates[0].toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "short",
-              })} - ${sortedDates[sortedDates.length - 1].toLocaleDateString(
-                "en-GB",
-                { day: "numeric", month: "short" }
-              )}`
+              day: "numeric",
+              month: "short",
+            })} - ${sortedDates[sortedDates.length - 1].toLocaleDateString(
+              "en-GB",
+              { day: "numeric", month: "short" }
+            )}`
             : "";
 
-        // Check if request.wfh_types exists and is an array
+        // Get the WFH type
         const wfhType =
           Array.isArray(request.wfh_types) && request.wfh_types.length > 0
             ? request.wfh_types[0]
             : undefined;
+
+        // Calculate recurring dates
+        const recurringDates = getRecurringDates(request.dates);
 
         return {
           key: request.Request_ID.toString(),
@@ -88,6 +113,7 @@ export const getPendingRequests = async (managerStaffId: string) => {
           wfhType: wfhType,
           reason: request.Request_Reason,
           document: documentUrls,
+          recurringDates: recurringDates, // Include recurring dates in the response
         };
       })
     );
@@ -98,6 +124,7 @@ export const getPendingRequests = async (managerStaffId: string) => {
     throw error;
   }
 };
+
 
 export const getRequests = async (managerStaffId: string) => {
   try {
@@ -175,10 +202,11 @@ export const getStaffRequests = async (staffID: string) => {
     const query = `
         SELECT 
             r."Request_ID",        
-            rd."Date" AS "Date",   
             rd."WFH_Type",  
             r."Current_Status", 
-            r."Request_Reason"   
+            r."Request_Reason",
+            r."Document",
+            array_agg(rd."Date") as dates 
         FROM 
             public."Request" r
         INNER JOIN 
@@ -187,34 +215,40 @@ export const getStaffRequests = async (staffID: string) => {
             r."Request_ID" = rd."Request_ID"  
         WHERE 
             r."Staff_ID" = $1 
+        GROUP BY 
+            r."Request_ID", rd."WFH_Type", r."Current_Status", r."Request_Reason" 
         ORDER BY 
-            r."Request_ID", rd."Date" ASC
+            r."Request_ID"
     `;
 
     const result = await pool.query(query, [staffID]);
     const rows = result.rows;
 
-    // Consolidate by Request_ID
-    const consolidatedRequests = rows.reduce((acc: any[], row) => {
-      const existingRequest = acc.find(r => r.Request_ID === row.Request_ID);
+    // Consolidate by Request_ID, calculate recurring dates, and fetch documents
+    const consolidatedRequests = await Promise.all(
+      rows.map(async (row) => {
+        // Calculate recurring dates
+        const recurringDates = getRecurringDates(row.dates);
 
-      if (existingRequest) {
-        // Update the End_Date if the current row's Date is later
-        existingRequest.End_Date = row.Date;
-      } else {
-        // Add new entry for a unique Request_ID with Start_Date and End_Date initialized to the same date
-        acc.push({
+        // Fetch documents from S3
+        let documentUrls = [];
+        if (Array.isArray(row.Document) && row.Document.length > 0) {
+          const documentPromises = row.Document.map(getDocumentFromS3);
+          documentUrls = await Promise.all(documentPromises);
+        }
+
+        return {
           Request_ID: row.Request_ID,
-          Start_Date: row.Date,
-          End_Date: row.Date,
+          Start_Date: row.dates[0],
+          End_Date: row.dates[row.dates.length - 1],
           WFH_Type: row.WFH_Type,
           Current_Status: row.Current_Status,
-          Request_Reason: row.Request_Reason
-        });
-      }
-
-      return acc;
-    }, []);
+          Request_Reason: row.Request_Reason,
+          Recurring_Dates: recurringDates,
+          Documents: documentUrls, // Include document URLs in the result
+        };
+      })
+    );
 
     // Return consolidated requests as an array
     return consolidatedRequests;
@@ -223,7 +257,6 @@ export const getStaffRequests = async (staffID: string) => {
     throw error;
   }
 };
-
 
 export const withdrawRequestService = async (requestId: number, staffId: string, requestReason: string) => {
   try {

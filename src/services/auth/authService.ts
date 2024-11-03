@@ -19,7 +19,6 @@ export interface UserPayload {
 export const authenticateUser = async (Staff_ID: number, password: string) => {
   try {
     // Query the database using the pool
-    console.log("Reached Service")
     const result = await pool.query('SELECT * FROM "Credentials" WHERE "Staff_ID" = $1', [Staff_ID]);
     const user = result.rows[0];
 

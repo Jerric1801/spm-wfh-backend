@@ -1,6 +1,7 @@
 import csv
 import random
 from datetime import datetime, timedelta
+from dateutil.rrule import rrule, WEEKLY
 
 request_reasons = [
     "Focused work environment at home.",
@@ -95,18 +96,25 @@ def generate_seed_data(employees_csv, start_date, end_date, num_requests):
     requests.append(request)
 
     # Create request details data
-    num_dates = random.randint(1, 4)  # Generate 1 to 7 dates per request
+    num_weeks = random.randint(1, 4)  # Generate 1 to 4 weeks per request
+    weekdays = random.sample([0, 1, 2, 3, 4, 5, 6], random.randint(1, 3)) # Select 1 to 3 weekdays
+
+    # Ensure the first date is within the specified range and adjust if necessary
     first_date_days = random.randrange((end_date - start_date).days)
     first_date = start_date + timedelta(days=first_date_days)
+    if first_date + timedelta(weeks=num_weeks) > end_date:
+        first_date = end_date - timedelta(weeks=num_weeks)
 
-    for i in range(num_dates):
-      request_date = first_date + timedelta(days=i)
-      request_detail = {
-          'Request_ID': request_id,
-          'Date': request_date.strftime('%Y-%m-%d'),
-          'WFH_Type': random.choice(['WD', 'AM', 'PM'])
-      }
-      request_details.append(request_detail)
+    wfh_type = random.choice(['WD', 'AM', 'PM'])
+
+    for day in weekdays:
+      for request_date in rrule(WEEKLY, dtstart=first_date, count=num_weeks, byweekday=day):
+        request_detail = {
+            'Request_ID': request_id,
+            'Date': request_date.strftime('%Y-%m-%d'),
+            'WFH_Type': wfh_type
+        }
+        request_details.append(request_detail)
 
     request_id += 1
 

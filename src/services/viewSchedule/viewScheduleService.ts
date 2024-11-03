@@ -184,7 +184,6 @@ abstract class ScheduleService {
       }
     });
 
-    console.log(schedule);
     return schedule;
   }
 
