@@ -9,9 +9,8 @@ export const up = function (knex: Knex): Promise<void> {
         table.timestamp('Created_At').defaultTo(knex.fn.now()); // Creation timestamp
         table.timestamp('Last_Updated').defaultTo(knex.fn.now()); // Last updated timestamp
         table.string('Request_Reason').notNullable();
-        table.string('Manager_Reason');
-        table.boolean('User_Seen').defaultTo(false); // User_Seen column with default value false
-        table.boolean('Manager_Seen').defaultTo(false); // Manager_Seen column with default value false
+        table.string('Manager_Reason')
+        table.specificType('Document', 'varchar(255) ARRAY');
     });
 };
 
