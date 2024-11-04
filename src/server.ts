@@ -9,6 +9,7 @@ import viewScheduleRoutes from './services/viewSchedule/viewScheduleRoutes';
 import manageRequestRoutes from './services/manageRequest/manageRequestRoutes';
 import authRoutes from './services/auth/authRoutes'
 import applyWFHRoutes from './services/applyWFH/applyWFHRoutes';
+import notificationRoutes from './services/notifications/notificationsRoutes';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/apply-WFH', applyWFHRoutes);
 
 //Register routes for each serivces
 app.use('/api/manage-request', manageRequestRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
