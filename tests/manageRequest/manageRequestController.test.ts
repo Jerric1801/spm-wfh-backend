@@ -144,14 +144,14 @@ describe('manageRequestController', () => {
       expect(jsonMock).toHaveBeenCalledWith({ message: 'Unauthorized' });
     });
 
-    test('should return 404 if no requests are found', async () => {
+    test('should return 200 if no requests are found', async () => {
       req.user = { Staff_ID: 150118 } as UserPayload;
       mockGetRequests.mockResolvedValue([]);
 
       await viewRequests(req as AuthenticatedRequest, res as Response);
 
       expect(mockGetRequests).toHaveBeenCalledWith('150118');
-      expect(statusMock).toHaveBeenCalledWith(404);
+      expect(statusMock).toHaveBeenCalledWith(200);
       expect(jsonMock).toHaveBeenCalledWith({ message: 'No requests found.' });
     });
 

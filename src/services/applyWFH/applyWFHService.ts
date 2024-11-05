@@ -6,7 +6,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import awsConfig from '../../config/aws';
 import mime from 'mime-types';
 
-interface WorkFromHomeRequest {
+export interface WorkFromHomeRequest {
     Staff_ID: number;
     Dates: Date[];
     WFHType: 'AM' | 'PM' | 'WD';
