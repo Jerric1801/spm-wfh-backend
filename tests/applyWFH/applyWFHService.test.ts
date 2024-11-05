@@ -135,11 +135,11 @@ describe("applyForWorkFromHome", () => {
       .mockResolvedValueOnce({}) // Mock sequence setting query 2
       .mockResolvedValueOnce(mockRequestId) // Mock the generation of Request_ID
       .mockResolvedValueOnce({ rowCount: 1 }) // Mock successful insertion into Request table
-      .mockResolvedValueOnce({ rowCount: 365 }); // Mock successful insertion into RequestDetails table for 365 days
+      .mockResolvedValueOnce({ rowCount: 4 }); // Mock successful insertion into RequestDetails table for 4 days over a long time period
 
       const request: WorkFromHomeRequest = {
         Staff_ID: 123456,
-        Dates: [parseISO("2024-10-08"), parseISO("2024-10-10"), parseISO("2024-10-15"), parseISO("2024-10-17")], // Provide Dates array
+        Dates: [parseISO("2024-10-08"), parseISO("2024-11-10"), parseISO("2024-12-15"), parseISO("2025-01-17")], // Provide Dates array
         WFHType: "AM",
         WFHReason: "Child CCA Performance",
         Document: []
@@ -148,22 +148,22 @@ describe("applyForWorkFromHome", () => {
     const result = await applyForWorkFromHome(request);
 
     expect(pool.query).toHaveBeenCalledTimes(7);
-    expect(result.details).toHaveLength(365); // Each day in 2024
+    expect(result.details).toHaveLength(4); // Each day in 2024
     expect(result.details[0]).toEqual({
       Request_ID: 4,
-      Date: "2025-01-01",
-      WFH_Type: "WD",
+      Date: "2024-10-08",
+      WFH_Type: "AM",
     });
-    expect(result.details[364]).toEqual({
+    expect(result.details[3]).toEqual({
       Request_ID: 4,
-      Date: "2025-12-31",
-      WFH_Type: "WD",
+      Date: "2025-01-17",
+      WFH_Type: "AM",
     });
   });
 
   //////////
 
-  it("should reject work-from-home request if it conflicts existing requests", async () => {
+  it("should reject work-from-home request if it conflicts with existing requests", async () => {
     const mockCurrentRequestIds = { rows: [{ Request_ID: 5 }] };
     const mockConflictDates = { rowCount: 20 };
 
@@ -181,21 +181,6 @@ describe("applyForWorkFromHome", () => {
 
     await expect(applyForWorkFromHome(request)).rejects.toThrow("Conflicting request dates found.");
     expect(pool.query).toHaveBeenCalledTimes(2);
-  });
-
-  //////////
-
-  it("should reject work-from-home request if there are no available weekdays in date range provided", async () => {
-
-    const request: WorkFromHomeRequest = {
-      Staff_ID: 123456,
-      Dates: [parseISO("2024-10-08"), parseISO("2024-10-10"), parseISO("2024-10-15"), parseISO("2024-10-17")], // Provide Dates array
-      WFHType: "AM",
-      WFHReason: "Child CCA Performance",
-      Document: []
-    };
-    await expect(applyForWorkFromHome(request)).rejects.toThrow("No suitable dates found.");
-    expect(pool.query).toHaveBeenCalledTimes(0);
   });
 
   //////////
