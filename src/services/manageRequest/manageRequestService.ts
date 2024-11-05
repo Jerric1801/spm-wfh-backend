@@ -12,14 +12,14 @@ const getRecurringDates = (dates: Date[]): string[] => {
   const uniqueDays = new Set(
     dates.map((date) => {
       const dateUTC = new Date(date); // No need to convert if already in UTC
+      console.log("unique", dateUTC)
       return daysOfWeek[dateUTC.getUTCDay()]; 
     })
   );
 
-  // If there are more than 2 unique days, it's likely recurring
-  if (uniqueDays.size > 1) {
-    uniqueDays.forEach((day) => recurringDays.push(day));
-  }
+  console.log(uniqueDays)
+  uniqueDays.forEach((day) => recurringDays.push(day));
+
 
   return recurringDays;
 };
