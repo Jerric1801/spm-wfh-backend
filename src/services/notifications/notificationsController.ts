@@ -20,7 +20,7 @@ export const showNotifications = async (req: AuthenticatedRequest, res: Response
         const hasUserNotifications = notifications.user.length > 0;
 
         if (!hasManagerNotifications && !hasUserNotifications) {
-            return res.status(200).json({ message: 'No pending requests found.' });
+            return res.status(200).json({ message: 'No pending requests found.', data: notifications });
         }
 
         return res.status(200).json({
@@ -35,6 +35,11 @@ export const showNotifications = async (req: AuthenticatedRequest, res: Response
 
 export const acceptNotifications = async (req: AuthenticatedRequest, res: Response) => {
     const user = req.user;
+
+    if (!user) {
+        return res.status(403).json({ message: 'Unauthorized' });
+    }
+
     const { requestIdArr } = req.body;
 
     try {
