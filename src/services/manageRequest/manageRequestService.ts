@@ -12,7 +12,7 @@ const getRecurringDates = (dates: Date[]): string[] => {
   const uniqueDays = new Set(
     dates.map((date) => {
       const dateUTC = new Date(date); // No need to convert if already in UTC
-      return daysOfWeek[dateUTC.getUTCDay()]; 
+      return daysOfWeek[dateUTC.getUTCDay()];
     })
   );
 
@@ -77,7 +77,7 @@ export const getPendingRequests = async (managerStaffId: string) => {
         let documentUrls = [];
 
         if (Array.isArray(request.Document) && request.Document.length > 0) {
-          try { 
+          try {
             const documentPromises = request.Document.map(getDocumentFromS3);
             documentUrls = await Promise.all(documentPromises);
           } catch (s3Error) {
@@ -279,7 +279,7 @@ export const withdrawRequestService = async (requestId: number, staffId: string,
     return result; // Return the result to check row count in controller
   } catch (error) {
     console.error('Error withdrawing request:', error);
-    return null; 
+    throw error;
   }
 };
 

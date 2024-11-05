@@ -127,6 +127,7 @@ export const withdrawRequest = async (req: AuthenticatedRequest, res: Response) 
         } else {
             return res.status(404).json({ message: 'Request not found or already processed' });
         }
+        
     } catch (error) {
         console.error('Error withdrawing request:', error);
         return res.status(500).json({ message: 'Internal server error' });
