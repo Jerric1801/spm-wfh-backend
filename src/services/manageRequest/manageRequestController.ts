@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { approveRequest, rejectRequest, getPendingRequests, getStaffRequests,withdrawRequestService,getPendingRequestCount, getRequests } from './manageRequestService'; // Assuming getPendingRequests exists
+import { approveRequest, rejectRequest, getPendingRequests, getStaffRequests,withdrawRequestService, getRequests } from './manageRequestService'; // Assuming getPendingRequests exists
 import { UserPayload } from '../auth/authService'; // Assuming UserPayload defines user data structure
 
 interface AuthenticatedRequest extends Request {
@@ -127,23 +127,24 @@ export const withdrawRequest = async (req: AuthenticatedRequest, res: Response) 
         } else {
             return res.status(404).json({ message: 'Request not found or already processed' });
         }
+        
     } catch (error) {
         console.error('Error withdrawing request:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-export const getPendingRequestCountController = async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const user = req.user;
-        if (!user) {
-            return res.status(403).json({ message: 'Unauthorized' });
-        }
+// export const getPendingRequestCountController = async (req: AuthenticatedRequest, res: Response) => {
+//     try {
+//         const user = req.user;
+//         if (!user) {
+//             return res.status(403).json({ message: 'Unauthorized' });
+//         }
 
-        const pendingCount = await getPendingRequestCount(user.Staff_ID.toString());
-        return res.status(200).json({ pendingCount });
-    } catch (error) {
-        console.error('Error fetching pending request count:', error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
+//         const pendingCount = await getPendingRequestCount(user.Staff_ID.toString());
+//         return res.status(200).json({ pendingCount });
+//     } catch (error) {
+//         console.error('Error fetching pending request count:', error);
+//         return res.status(500).json({ message: 'Internal server error' });
+//     }
+// };

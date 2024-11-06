@@ -16,10 +16,8 @@ const getRecurringDates = (dates: Date[]): string[] => {
     })
   );
 
-  // If there are more than 2 unique days, it's likely recurring
-  if (uniqueDays.size > 1) {
-    uniqueDays.forEach((day) => recurringDays.push(day));
-  }
+  uniqueDays.forEach((day) => recurringDays.push(day));
+
 
   return recurringDays;
 };
@@ -79,10 +77,13 @@ export const getPendingRequests = async (managerStaffId: string) => {
       pendingRequests.map(async (request) => {
         let documentUrls = [];
 
-        // Check if request.Document exists and is an array
         if (Array.isArray(request.Document) && request.Document.length > 0) {
-          const documentPromises = request.Document.map(getDocumentFromS3);
-          documentUrls = await Promise.all(documentPromises);
+          try {
+            const documentPromises = request.Document.map(getDocumentFromS3);
+            documentUrls = await Promise.all(documentPromises);
+          } catch (s3Error) {
+            console.error("Error fetching documents from S3:", s3Error);
+          }
         }
 
         // Sort the dates and get the date range
@@ -292,10 +293,8 @@ export const getStaffRequests = async (staffID: string) => {
         const sortedDates = (row.dates || []).sort(
           (a: Date, b: Date) => a.getTime() - b.getTime()
         );
-        console.log(sortedDates);
         // Calculate recurring dates
         const recurringDates = getRecurringDates(sortedDates);
-        console.log("rec dates:", recurringDates);
         // Fetch documents from S3
         let documentUrls = [];
         if (Array.isArray(row.Document) && row.Document.length > 0) {
@@ -385,26 +384,6 @@ export const withdrawRequestService = async (
     return result; // Return the result to check row count in controller
   } catch (error) {
     console.error("Error withdrawing request:", error);
-    throw error;
-  }
-};
-
-export const getPendingRequestCount = async (managerStaffId: string) => {
-  try {
-    const query = `
-          SELECT COUNT(*) AS pending_count
-          FROM public."Request" r
-          INNER JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
-          WHERE r."Current_Status" = 'Pending'
-          AND e."Reporting_Manager" = $1
-      `;
-
-    const result = await pool.query(query, [managerStaffId]);
-    const pendingCount = result.rows[0].pending_count;
-
-    return parseInt(pendingCount, 10); // Convert to an integer
-  } catch (error) {
-    console.error("Error fetching pending request count:", error);
     throw error;
   }
 };

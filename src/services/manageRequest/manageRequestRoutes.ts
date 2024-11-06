@@ -1,6 +1,6 @@
 import express from 'express';
 import authenticateJWT from '../../middleware/authJWT';
-import { manageRequest, viewPendingRequests, viewStaffRequests,viewRequests, withdrawRequest, getPendingRequestCountController } from './manageRequestController';
+import { manageRequest, viewPendingRequests, viewStaffRequests,viewRequests, withdrawRequest} from './manageRequestController';
 import authoriseRole from '../../middleware/authRole';
 
 
@@ -20,6 +20,6 @@ router.get('/allRequest', authenticateJWT, authoriseRole(['1', '3']), viewReques
 
 router.post('/withdraw', authenticateJWT, withdrawRequest);
 
-router.get('/pending/count', authenticateJWT, authoriseRole(['1', '3']), getPendingRequestCountController);
+// router.get('/pending/count', authenticateJWT, authoriseRole(['1', '3']), getPendingRequestCountController);
 
 export default router;

@@ -7,12 +7,12 @@ import awsConfig from "../../config/aws";
 import mime from "mime-types";
 import { sendEmail } from "../../shared/sendEmail";
 
-interface WorkFromHomeRequest {
-  Staff_ID: number;
-  Dates: Date[];
-  WFHType: "AM" | "PM" | "WD";
-  WFHReason: string;
-  Document?: string[]; // Array of base64 strings
+export interface WorkFromHomeRequest {
+    Staff_ID: number;
+    Dates: Date[];
+    WFHType: 'AM' | 'PM' | 'WD';
+    WFHReason: string;
+    Document?: string[]; // Array of base64 strings
 }
 
 interface S3UploadParams {
