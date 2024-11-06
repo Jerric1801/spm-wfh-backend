@@ -175,6 +175,10 @@ export const applyForWorkFromHome = async (request: WorkFromHomeRequest) => {
       .map((rd) => `(${rd.Request_ID}, '${rd.Date}', '${rd.WFH_Type}')`)
       .join(", ");
 
+    const requestDetailsQuery = await pool.query(
+        `INSERT INTO public."RequestDetails" ${details_columns} VALUES ${details_values}`
+    );
+
     // First query to get the Reporting_Manager value (as a string) for the specific Staff_ID
     const reportingManagerQuery = `SELECT "Reporting_Manager" FROM public."Employees" WHERE "Staff_ID" = $1`;
     const reportingManagerQueryResults = await pool.query(reportingManagerQuery, [request.Staff_ID]);
