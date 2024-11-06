@@ -4,15 +4,18 @@ import {
 } from "../../src/services/applyWFH/applyWFHService";
 import pool from "../../src/config/db";
 import { parseISO } from 'date-fns';
+import { sendEmail } from '../../src/shared/sendEmail'; // Import sendEmail to mock
 
 jest.mock("../../src/config/db"); // Mock the db pool
+jest.mock('../../src/shared/sendEmail'); // Mock sendEmail
 
 const mockQuery = pool.query as jest.Mock;
+const mockSendEmail = sendEmail as jest.Mock;
 
 describe("applyForWorkFromHome", () => {
   beforeEach(() => {
-    // jest.clearAllMocks();
     jest.resetAllMocks();
+    mockSendEmail.mockResolvedValue(undefined); // Default: Mock sendEmail as successfully resolved
   });
 
   afterEach(() => {
@@ -49,6 +52,7 @@ describe("applyForWorkFromHome", () => {
     const result = await applyForWorkFromHome(request);
 
     expect(mockQuery).toHaveBeenCalledTimes(8); // Ensure all queries are called
+    expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
     expect(result.details).toHaveLength(3); // There should be 3 dates (Oct 1, 2, 3)
     expect(result.details).toEqual([
       { Request_ID: 1, Date: "2024-10-01", WFH_Type: "AM" },
@@ -88,6 +92,7 @@ describe("applyForWorkFromHome", () => {
     const result = await applyForWorkFromHome(request);
 
     expect(mockQuery).toHaveBeenCalledTimes(9);
+    expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
     expect(result.details).toHaveLength(1); // Only one date in range
     expect(result.details).toEqual([
       { Request_ID: 2, Date: "2024-10-05", WFH_Type: "PM" },
@@ -125,6 +130,7 @@ describe("applyForWorkFromHome", () => {
     const result = await applyForWorkFromHome(request);
 
     expect(mockQuery).toHaveBeenCalledTimes(9);
+    expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
     expect(result.details).toHaveLength(4); // Number of dates registered
     expect(result.details).toEqual([
       { Request_ID: 3, Date: "2024-10-08", WFH_Type: "AM" },
@@ -164,6 +170,7 @@ describe("applyForWorkFromHome", () => {
     const result = await applyForWorkFromHome(request);
 
     expect(pool.query).toHaveBeenCalledTimes(9);
+    expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
     expect(result.details).toHaveLength(4); // Each day in 2024
     expect(result.details[0]).toEqual({
       Request_ID: 4,
@@ -197,6 +204,7 @@ describe("applyForWorkFromHome", () => {
 
     await expect(applyForWorkFromHome(request)).rejects.toThrow("Conflicting request dates found.");
     expect(pool.query).toHaveBeenCalledTimes(2);
+    expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called due to conflicts
   });
 
   //////////
@@ -217,5 +225,6 @@ describe("applyForWorkFromHome", () => {
       "Database connection error"
     );
     expect(pool.query).toHaveBeenCalledTimes(1); // Ensure query was called before error
+    expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called due to database error
   });
 });

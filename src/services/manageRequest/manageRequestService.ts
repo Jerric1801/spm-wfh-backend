@@ -18,7 +18,6 @@ const getRecurringDates = (dates: Date[]): string[] => {
 
   uniqueDays.forEach((day) => recurringDays.push(day));
 
-
   return recurringDays;
 };
 
@@ -165,23 +164,32 @@ export const approveRequest = async (requestId: number) => {
 
     console.log("Rows affected:", result.rowCount); // Log rowCount
 
-        // Query to get the employee's First Name, Last Name, and Email by joining Request and Employees tables
-        const employeeDetailsQuery = `
-        SELECT e."Staff_FName", e."Staff_LName", e."Email" 
-        FROM public."Request" r
-        JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
-        WHERE r."Request_ID" = $1`;
-  
-      const employeeDetailsQueryResults = await pool.query(employeeDetailsQuery, [requestId,]);
-  
+    if (result.rowCount > 0) {
+      console.log(`Request ${requestId} approved successfully.`);
+      // Query to get the employee's First Name, Last Name, and Email by joining Request and Employees tables
+      const employeeDetailsQuery = `
+              SELECT e."Staff_FName", e."Staff_LName", e."Email" 
+              FROM public."Request" r
+              JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
+              WHERE r."Request_ID" = $1`;
+
+      const employeeDetailsQueryResults = await pool.query(
+        employeeDetailsQuery,
+        [requestId]
+      );
+
       // Extract the employee's details
       const employeeFirstName = employeeDetailsQueryResults.rows[0].Staff_FName;
       const employeeLastName = employeeDetailsQueryResults.rows[0].Staff_LName;
       const employeeEmail = employeeDetailsQueryResults.rows[0].Email;
-  
+
       // Define the user object to be used in sendEmail function
-      const user = {Staff_FName: employeeFirstName, Staff_LName: employeeLastName, Email: employeeEmail};
-  
+      const user = {
+        Staff_FName: employeeFirstName,
+        Staff_LName: employeeLastName,
+        Email: employeeEmail,
+      };
+
       // Send the email with managerAction set to false
       await sendEmail({
         user,
@@ -189,9 +197,6 @@ export const approveRequest = async (requestId: number) => {
         requestId,
         managerAction: false,
       });
-
-    if (result.rowCount > 0) {
-      console.log(`Request ${requestId} approved successfully.`);
       return { message: "Request approved successfully." };
     } else {
       return { message: "Request not found or already processed." };
@@ -216,39 +221,39 @@ export const rejectRequest = async (
     const params = [requestId, managerReason, false, true];
     const result = await pool.query(query, params);
 
-    // Query to get the employee's First Name, Last Name, and Email by joining Request and Employees tables
-    const employeeDetailsQuery = `
-        SELECT e."Staff_FName", e."Staff_LName", e."Email" 
-        FROM public."Request" r
-        JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
-        WHERE r."Request_ID" = $1`;
-
-    const employeeDetailsQueryResults = await pool.query(employeeDetailsQuery, [
-      requestId,
-    ]);
-
-    // Extract the employee's details
-    const employeeFirstName = employeeDetailsQueryResults.rows[0].Staff_FName;
-    const employeeLastName = employeeDetailsQueryResults.rows[0].Staff_LName;
-    const employeeEmail = employeeDetailsQueryResults.rows[0].Email;
-
-    // Define the user object to be used in sendEmail function
-    const user = {
-      Staff_FName: employeeFirstName,
-      Staff_LName: employeeLastName,
-      Email: employeeEmail,
-    };
-
-    // Send the email with managerAction set to false
-    await sendEmail({
-      user,
-      currentStatus: "Rejected",
-      requestId,
-      managerAction: false,
-    });
-
     if (result.rowCount > 0) {
       console.log(`Request ${requestId} rejected successfully.`);
+      // Query to get the employee's First Name, Last Name, and Email by joining Request and Employees tables
+      const employeeDetailsQuery = `
+    SELECT e."Staff_FName", e."Staff_LName", e."Email" 
+    FROM public."Request" r
+    JOIN public."Employees" e ON r."Staff_ID" = e."Staff_ID"
+    WHERE r."Request_ID" = $1`;
+
+      const employeeDetailsQueryResults = await pool.query(
+        employeeDetailsQuery,
+        [requestId]
+      );
+
+      // Extract the employee's details
+      const employeeFirstName = employeeDetailsQueryResults.rows[0].Staff_FName;
+      const employeeLastName = employeeDetailsQueryResults.rows[0].Staff_LName;
+      const employeeEmail = employeeDetailsQueryResults.rows[0].Email;
+
+      // Define the user object to be used in sendEmail function
+      const user = {
+        Staff_FName: employeeFirstName,
+        Staff_LName: employeeLastName,
+        Email: employeeEmail,
+      };
+
+      // Send the email with managerAction set to false
+      await sendEmail({
+        user,
+        currentStatus: "Rejected",
+        requestId,
+        managerAction: false,
+      });
       return { message: "Request rejected successfully." };
     } else {
       return { message: "Request not found or already processed." };
@@ -338,50 +343,55 @@ export const withdrawRequestService = async (
     const params = [requestId, staffId, requestReason, true, false];
     const result = await pool.query(query, params);
 
-    // First query to get the Reporting_Manager value (as a string) for the specific Staff_ID
-    const reportingManagerQuery = `SELECT "Reporting_Manager" FROM public."Employees" WHERE "Staff_ID" = $1`;
-    const reportingManagerQueryResults = await pool.query(
-      reportingManagerQuery,
-      [staffId]
-    );
+    if (result.rowCount > 0) {
+      console.log(`Request ${requestId} rejected successfully.`);
 
-    // Convert the Reporting_Manager identifier to an integer
-    const reportingManagerIdentifier = parseInt(
-      reportingManagerQueryResults.rows[0].Reporting_Manager,
-      10
-    );
+      // First query to get the Reporting_Manager value (as a string) for the specific Staff_ID
+      const reportingManagerQuery = `SELECT "Reporting_Manager" FROM public."Employees" WHERE "Staff_ID" = $1`;
+      const reportingManagerQueryResults = await pool.query(
+        reportingManagerQuery,
+        [staffId]
+      );
 
-    // Step 2: Use the Reporting_Manager identifier to get the manager's details
-    const managerDetailsQuery = `
+      // Convert the Reporting_Manager identifier to an integer
+      const reportingManagerIdentifier = parseInt(
+        reportingManagerQueryResults.rows[0].Reporting_Manager,
+        10
+      );
+
+      // Step 2: Use the Reporting_Manager identifier to get the manager's details
+      const managerDetailsQuery = `
         SELECT "Staff_FName", "Staff_LName", "Email" 
         FROM public."Employees" 
         WHERE "Staff_ID" = $1
     `;
 
-    const managerDetailsQueryResults = await pool.query(managerDetailsQuery, [
-      reportingManagerIdentifier,
-    ]);
+      const managerDetailsQueryResults = await pool.query(managerDetailsQuery, [
+        reportingManagerIdentifier,
+      ]);
 
-    // Extract the manager's details
-    const managerFirstName = managerDetailsQueryResults.rows[0].Staff_FName;
-    const managerLastName = managerDetailsQueryResults.rows[0].Staff_LName;
-    const managerEmail = managerDetailsQueryResults.rows[0].Email;
+      // Extract the manager's details
+      const managerFirstName = managerDetailsQueryResults.rows[0].Staff_FName;
+      const managerLastName = managerDetailsQueryResults.rows[0].Staff_LName;
+      const managerEmail = managerDetailsQueryResults.rows[0].Email;
 
-    // Define the user object to be used in sendEmail function
-    const user = {
-      Staff_FName: managerFirstName,
-      Staff_LName: managerLastName,
-      Email: managerEmail, // Directly use manager's email
-    };
-    // Send
-    await sendEmail({
-      user,
-      currentStatus: "Withdrawn",
-      requestId,
-      managerAction: false,
-    });
+      // Define the user object to be used in sendEmail function
+      const user = {
+        Staff_FName: managerFirstName,
+        Staff_LName: managerLastName,
+        Email: managerEmail, // Directly use manager's email
+      };
+      // Send
+      await sendEmail({
+        user,
+        currentStatus: "Withdrawn",
+        requestId,
+        managerAction: false,
+      });
+    }
+    return result;
 
-    return result; // Return the result to check row count in controller
+    // Return the result to check row count in controller
   } catch (error) {
     console.error("Error withdrawing request:", error);
     throw error;

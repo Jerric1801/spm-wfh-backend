@@ -9,13 +9,19 @@ jest.mock('mailtrap');
 const mockedMailtrapClient = MailtrapClient as jest.Mock;
 
 describe('sendEmail', () => {
-    let mockClientInstance: { send: jest.Mock };
+  let mockClientInstance: { send: jest.Mock };
 
   beforeEach(() => {
+    // Mock the Mailtrap client instance
     mockClientInstance = {
-      send: jest.fn().mockResolvedValue(undefined),
+      send: jest.fn().mockResolvedValue({ message_id: 'mocked-message-id' }),
     };
     mockedMailtrapClient.mockImplementation(() => mockClientInstance);
+
+    // Mock process.env variables used in tests
+    process.env.SENDER_EMAIL = 'no-reply@example.com';
+    process.env.RECIEPIENT_EMAIL = 'recipient@example.com';
+    process.env.MAILTRAP_API_TOKEN = 'mocked_token';
   });
 
   afterEach(() => {
@@ -89,8 +95,9 @@ describe('sendEmail', () => {
       category: 'Notification',
     });
   });
-  
+
   it('should handle errors from the Mailtrap client and throw an error', async () => {
+    // Mock the send method to throw an error to simulate an API failure
     mockClientInstance.send.mockRejectedValue(new Error('Mailtrap error'));
 
     const userPayload = {
@@ -111,8 +118,8 @@ describe('sendEmail', () => {
     );
   });
 
-
   it('should throw an error if MAILTRAP_API_TOKEN is not defined', async () => {
+    // Temporarily delete the MAILTRAP_API_TOKEN variable
     delete process.env.MAILTRAP_API_TOKEN;
 
     const userPayload = {
@@ -134,6 +141,7 @@ describe('sendEmail', () => {
   });
 
   it('should throw an error if SENDER_EMAIL is not defined', async () => {
+    // Temporarily delete the SENDER_EMAIL variable
     delete process.env.SENDER_EMAIL;
 
     const userPayload = {
@@ -154,3 +162,4 @@ describe('sendEmail', () => {
     );
   });
 });
+

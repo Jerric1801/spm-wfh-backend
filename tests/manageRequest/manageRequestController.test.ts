@@ -1,5 +1,5 @@
-import { manageRequest, viewPendingRequests, viewRequests,viewStaffRequests} from '../../src/services/manageRequest/manageRequestController';
-import { approveRequest, rejectRequest, getPendingRequests,getRequests ,getStaffRequests} from "../../src/services/manageRequest/manageRequestService";
+import { manageRequest, viewPendingRequests, viewRequests } from '../../src/services/manageRequest/manageRequestController';
+import { approveRequest, rejectRequest, getPendingRequests,getRequests } from "../../src/services/manageRequest/manageRequestService";
 import { Request, Response } from 'express';
 import { UserPayload } from '../../src/services/auth/authService';
 
@@ -13,7 +13,6 @@ const mockApproveRequest = approveRequest as jest.Mock;
 const mockRejectRequest = rejectRequest as jest.Mock;
 const mockGetPendingRequests = getPendingRequests as jest.Mock;
 const mockGetRequests = getRequests as  jest.Mock;
-const mockGetStaff = getStaffRequests as jest.Mock;
 
 describe('manageRequestController', () => {
   let req: Partial<AuthenticatedRequest>;
@@ -179,8 +178,5 @@ describe('manageRequestController', () => {
       expect(jsonMock).toHaveBeenCalledWith({ message: 'Internal server error' });
     });
   });
-
-
-
 
 });

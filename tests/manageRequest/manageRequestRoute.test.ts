@@ -4,6 +4,7 @@ import manageRequestRouter from "../../src/services/manageRequest/manageRequestR
 import pool from "../../src/config/db";
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import { sendEmail } from "../../src/shared/sendEmail";
 
 interface AuthenticatedRequest extends Request {
   user?: UserPayload; // Use the defined `UserPayload` type
@@ -13,9 +14,11 @@ import { UserPayload } from "../../src/services/auth/authService";
 
 jest.mock("../../src/config/db");
 jest.mock("jsonwebtoken");
+jest.mock("../../src/shared/sendEmail"); // Mock sendEmail
 
 const mockQuery = pool.query as jest.Mock;
 const mockJwtVerify = jwt.verify as jest.Mock;
+const mockSendEmail = sendEmail as jest.Mock;
 
 const app = express();
 app.use(express.json());
@@ -75,10 +78,11 @@ describe("manageRequestRoute", () => {
         callback(new Error("Invalid token"), null);
       }
     });
+    mockSendEmail.mockResolvedValue(undefined); // Mock sendEmail as successfully resolved
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   describe("GET /requests/pending", () => {
@@ -172,6 +176,7 @@ describe("manageRequestRoute", () => {
         .send({ requestId: 1, action: "approve" })
         .set("Authorization", "Bearer valid-token");
       expect(response.status).toBe(200);
+      expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
       expect(response.body).toEqual({
         message: "Request approved successfully.",
       });
@@ -200,6 +205,7 @@ describe("manageRequestRoute", () => {
         })
         .set("Authorization", "Bearer valid-token");
       expect(response.status).toBe(200);
+      expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
       expect(response.body).toEqual({
         message: "Request rejected successfully.",
       });
@@ -223,6 +229,7 @@ describe("manageRequestRoute", () => {
         .set("Authorization", "Bearer valid-token");
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ message: "Internal server error" });
+      expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called due to error
     });
   });
 
@@ -331,6 +338,7 @@ describe("manageRequestRoute", () => {
       expect(response.body).toEqual({ message: "Internal server error" });
     });
   });
+  
   describe("POST /requests/withdraw", () => {
     test("should withdraw a request if requestId is valid and reason is provided", async () => {
       // Mock the service call to return a successful withdrawal
@@ -345,6 +353,7 @@ describe("manageRequestRoute", () => {
         .send({ requestId: 1, requestReason: "Personal reasons" })
         .set("Authorization", "Bearer valid-token");
       expect(response.status).toBe(200);
+      expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
       expect(response.body).toEqual({
         message: "Request withdrawn successfully",
       });
@@ -377,6 +386,7 @@ describe("manageRequestRoute", () => {
       expect(response.body).toEqual({
         message: "Request not found or already processed",
       });
+      expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called
     });
 
     test("should return 500 if an error occurs", async () => {
@@ -389,6 +399,7 @@ describe("manageRequestRoute", () => {
         .set("Authorization", "Bearer valid-token");
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ message: "Internal server error" });
+      expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called due to error
     });
   });
 });

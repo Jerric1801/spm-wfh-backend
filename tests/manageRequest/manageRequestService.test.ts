@@ -6,12 +6,20 @@ import {
   withdrawRequestService,
 } from "../../src/services/manageRequest/manageRequestService";
 import pool from "../../src/config/db";
+import { sendEmail } from "../../src/shared/sendEmail";
 
 jest.mock("../../src/config/db");
+jest.mock("../../src/shared/sendEmail"); // Mock sendEmail
 
 const mockQuery = pool.query as jest.Mock;
+const mockSendEmail = sendEmail as jest.Mock;
 
 describe("manageRequestService", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockSendEmail.mockResolvedValue(undefined); // Default: Mock sendEmail as successfully resolved
+  });
+
   describe("getPendingRequests", () => {
     describe("GET /requests/pending", () => {
       test("should fetch all pending requests for a given managerStaffId", async () => {
@@ -120,6 +128,7 @@ describe("manageRequestService", () => {
 
       const result = await approveRequest(1);
       expect(mockQuery).toHaveBeenCalledWith(expect.any(String), [1]);
+      expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
       expect(result).toEqual({ message: "Request approved successfully." });
     });
 
@@ -138,7 +147,8 @@ describe("manageRequestService", () => {
         .mockResolvedValueOnce(mockStaffDetailsResult);
 
       const result = await approveRequest(999);
-      expect(mockQuery).toHaveBeenCalledWith(expect.any(String), [999]);
+      expect(mockQuery).toHaveBeenCalledWith(expect.any(String), [999, false, true]);
+      expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called
       expect(result).toEqual({
         message: "Request not found or already processed.",
       });
@@ -148,6 +158,7 @@ describe("manageRequestService", () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
       await expect(approveRequest(1)).rejects.toThrow("Database error");
+      expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called due to error
     });
   });
 
@@ -173,6 +184,7 @@ describe("manageRequestService", () => {
         false,
         true
       ]);
+      expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
       expect(result).toEqual({ message: "Request rejected successfully." });
     });
 
@@ -197,6 +209,7 @@ describe("manageRequestService", () => {
         false,
         true
       ]);
+      expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called
       expect(result).toEqual({
         message: "Request not found or already processed.",
       });
@@ -208,6 +221,7 @@ describe("manageRequestService", () => {
       await expect(rejectRequest(2, "Some valid reason")).rejects.toThrow(
         "Database error"
       );
+      expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called due to error
     });
   });
 
@@ -324,6 +338,7 @@ describe("manageRequestService", () => {
         true,
         false
       ]);
+      expect(mockSendEmail).toHaveBeenCalled(); // Ensure sendEmail was called
       expect(result.rowCount).toBe(1);
     });
 
@@ -332,6 +347,7 @@ describe("manageRequestService", () => {
       await expect(
         withdrawRequestService(1, "150118", "Valid reason")
       ).rejects.toThrow("Database error");
+      expect(mockSendEmail).not.toHaveBeenCalled(); // Ensure sendEmail was not called due to error
     });
   });
 });
