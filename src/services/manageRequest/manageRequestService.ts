@@ -374,7 +374,7 @@ export const withdrawRequestService = async (
       Email: managerEmail, // Directly use manager's email
     };
     // Send
-    sendEmail({
+    await sendEmail({
       user,
       currentStatus: "Withdrawn",
       requestId,
