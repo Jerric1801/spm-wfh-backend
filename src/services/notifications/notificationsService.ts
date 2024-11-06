@@ -20,7 +20,7 @@ export const getNotifications = async (user: UserPayload): Promise<{ manager?: N
         if (role === '1' || role === '3') {
             const managerQuery = `
                 SELECT r."Request_ID" AS "requestId", r."Current_Status" AS "currentStatus",
-                       MIN(rd."Date") AS "earliestDate", MAX(rd."Date") AS "latestDate"
+                       MIN(rd."Date") AS "earliestDate", MAX(rd."Date") AS "latestDate", r."Manager_Reason"
                 FROM public."Request" r
                 INNER JOIN public."Employees" e ON e."Staff_ID" = r."Staff_ID"
                 INNER JOIN public."RequestDetails" rd ON r."Request_ID" = rd."Request_ID"
@@ -35,7 +35,7 @@ export const getNotifications = async (user: UserPayload): Promise<{ manager?: N
         // Query for all roles 1, 2, 3: where staff_id equals user_id
         const userQuery = `
             SELECT r."Request_ID" AS "requestId", r."Current_Status" AS "currentStatus",
-                   MIN(rd."Date") AS "earliestDate", MAX(rd."Date") AS "latestDate"
+                   MIN(rd."Date") AS "earliestDate", MAX(rd."Date") AS "latestDate", r."Manager_Reason"
             FROM public."Request" r
             INNER JOIN public."RequestDetails" rd ON r."Request_ID" = rd."Request_ID"
             WHERE r."Staff_ID" = $1
