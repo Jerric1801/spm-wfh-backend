@@ -45,8 +45,7 @@ describe('sendEmail', () => {
       },
       to: [
         {
-          email: process.env.TEST_RECIEPIENT,
-          name: 'Jerric Chan',
+          email: process.env.RECIEPIENT_EMAIL,
         },
       ],
       subject: 'Notification for Request ID: 12345',
@@ -82,8 +81,7 @@ describe('sendEmail', () => {
       },
       to: [
         {
-          email: process.env.TEST_RECIEPIENT,
-          name: 'Jane Smith',
+          email: process.env.RECIEPIENT_EMAIL,
         },
       ],
       subject: 'Notification for Request ID: 67890',

@@ -52,8 +52,6 @@ export const sendEmail = async ({ user, currentStatus, requestId, managerAction 
 
         text += `This is a system-generated message. Do not reply to this email`;
 
-        console.log(text)
-
         // Send mail using Mailtrap API
         await client.send({
             from: sender,
