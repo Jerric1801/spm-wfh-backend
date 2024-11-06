@@ -46,8 +46,10 @@ export const getNotifications = async (user: UserPayload): Promise<{ manager?: N
         userNotifications.push(...userResults.rows);
 
         if (role === '2') {
+            console.log(userNotifications)
             return { user: userNotifications };
         }
+        console.log(userNotifications, managerNotifications)
         return { manager: managerNotifications, user: userNotifications };
     } catch (error) {
         console.error('Error fetching notifications:', error);

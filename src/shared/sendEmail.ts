@@ -40,8 +40,7 @@ export const sendEmail = async ({ user, currentStatus, requestId, managerAction 
         const recipients = [
             {
                 // email: user.Email,
-                email: process.env.TEST_RECIEPIENT,
-                name: `${user.Staff_FName} ${user.Staff_LName}`,
+                email: process.env.RECIEPIENT_EMAIL,
             },
         ];
         
