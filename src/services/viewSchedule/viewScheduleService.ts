@@ -223,15 +223,17 @@ class HRScheduleService extends ScheduleService {
 class EmployeeScheduleService extends ScheduleService {
   protected async fetchEmployees(): Promise<EmployeeRecord[]> {
     try {
+      console.log("EmployeeScheduleService")
       const { reportingManager } = await getUserDetails(this.user.Staff_ID);
       const query = `
                 SELECT e."Staff_ID", e."Staff_FName", e."Staff_LName", e."Dept", e."Position"
                 FROM public."Employees" e
-                WHERE e."Reporting_Manager" = $1 OR e."Staff_ID" = $2
+                WHERE ( e."Reporting_Manager" = $1  AND e."Position" = $3 ) OR  e."Staff_ID" = $2
             `;
       const result = await pool.query(query, [
         reportingManager,
         Number(reportingManager),
+        this.user.Position
       ]);
       return result.rows as EmployeeRecord[];
     } catch (error) {
